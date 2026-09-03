@@ -3,97 +3,297 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LinguaHub | Đăng nhập Hệ Thống</title>
+    <meta name="description" content="Đăng nhập hoặc đăng ký tài khoản LinguaHub - Hệ thống quản lý trung tâm ngoại ngữ chuyên nghiệp." />
+    <title>LinguaHub | Đăng nhập & Đăng ký</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/login.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/auth.css" />
   </head>
   <body>
-    <div class="page">
-      <div class="panel">
-        <div class="panel-head">
-          <div class="logo illustration" aria-hidden="true">
-            <svg viewBox="0 0 220 220" role="img" aria-label="Ong đeo kính đang cầm sách">
-              <circle cx="110" cy="110" r="88" fill="#e8f2ff" />
-              <ellipse cx="86" cy="96" rx="38" ry="30" fill="#facc15" stroke="#1f2937" stroke-width="8" />
-              <ellipse cx="132" cy="96" rx="38" ry="30" fill="#facc15" stroke="#1f2937" stroke-width="8" />
-              <rect x="62" y="74" width="34" height="18" rx="9" fill="#1f2937" />
-              <rect x="124" y="74" width="34" height="18" rx="9" fill="#1f2937" />
-              <rect x="82" y="65" width="54" height="18" rx="8" fill="#111827" />
-              <circle cx="72" cy="96" r="8" fill="#ffffff" />
-              <circle cx="128" cy="96" r="8" fill="#ffffff" />
-              <circle cx="72" cy="96" r="3" fill="#111827" />
-              <circle cx="128" cy="96" r="3" fill="#111827" />
-              <path d="M70 130c10 18 28 28 42 28s32-10 42-28" fill="none" stroke="#1f2937" stroke-width="8" stroke-linecap="round" />
-              <path d="M94 64l-18-24" stroke="#1f2937" stroke-width="8" stroke-linecap="round" />
-              <path d="M126 64l18-24" stroke="#1f2937" stroke-width="8" stroke-linecap="round" />
-              <path d="M84 54l10-24" stroke="#1f2937" stroke-width="7" stroke-linecap="round" />
-              <path d="M136 54l-10-24" stroke="#1f2937" stroke-width="7" stroke-linecap="round" />
-              <path d="M82 152l-24 24" stroke="#f59e0b" stroke-width="9" stroke-linecap="round" />
-              <path d="M138 152l24 24" stroke="#f59e0b" stroke-width="9" stroke-linecap="round" />
-              <rect x="142" y="120" width="44" height="34" rx="6" fill="#2563eb" />
-              <rect x="148" y="126" width="32" height="22" rx="4" fill="#f8fafc" />
-              <path d="M152 132h24" stroke="#2563eb" stroke-width="4" stroke-linecap="round" />
-              <path d="M154 138h20" stroke="#2563eb" stroke-width="4" stroke-linecap="round" />
-              <path d="M160 146l-10 12" stroke="#1f2937" stroke-width="6" stroke-linecap="round" />
-              <path d="M170 146l10 12" stroke="#1f2937" stroke-width="6" stroke-linecap="round" />
-            </svg>
-          </div>
-          <h1>Đăng nhập hệ thống</h1>
-          <p>Chọn vai trò để bắt đầu công việc</p>
-        </div>
 
-        <div class="role-switch" role="tablist" aria-label="Chọn vai trò đăng nhập">
-          <button class="role-btn active" data-role="admin" type="button">Quản trị</button>
-          <button class="role-btn" data-role="teacher" type="button">Giảng viên</button>
-          <button class="role-btn" data-role="student" type="button">Học viên</button>
-        </div>
+    <div class="auth-card">
 
-        <form id="admin-form" class="auth-form active-form" data-role="admin">
-          <label>
-            Tên đăng nhập hoặc Email
-            <input name="username" type="text" placeholder="Ví dụ: admin hoặc admin@linguahub.local" required />
-          </label>
-          <label>
-            Mật khẩu
-            <input name="password" type="password" placeholder="Nhập mật khẩu (Mặc định: 123456)" required />
-          </label>
-          <button class="btn btn-primary" type="submit">Đăng nhập Quản trị</button>
-        </form>
-
-        <form id="teacher-form" class="auth-form" data-role="teacher">
-          <label>
-            Tên đăng nhập hoặc Email
-            <input name="username" type="text" placeholder="Ví dụ: lan hoặc hung" required />
-          </label>
-          <label>
-            Mật khẩu
-            <input name="password" type="password" placeholder="Nhập mật khẩu (Mặc định: 123456)" required />
-          </label>
-          <button class="btn btn-primary" type="submit">Đăng nhập Giảng viên</button>
-        </form>
-
-        <form id="student-form" class="auth-form" data-role="student">
-          <label>
-            Tên đăng nhập hoặc Email
-            <input name="username" type="text" placeholder="Ví dụ: nguyenvana hoặc email" required />
-          </label>
-          <label>
-            Mật khẩu
-            <input name="password" type="password" placeholder="Nhập mật khẩu (Mặc định: 123456)" required />
-          </label>
-          <button class="btn btn-primary" type="submit">Đăng nhập Học viên</button>
-        </form>
-
-        <p class="footer-link">
-          Chưa có tài khoản?
-          <a href="register.html">Đăng ký tài khoản học viên ngay</a>
-        </p>
+      <!-- Brand Header -->
+      <div class="brand">
+        <div class="brand-icon">🎓</div>
+        <div class="brand-name">LinguaHub</div>
+        <div class="brand-sub">Hệ thống quản lý trung tâm ngoại ngữ</div>
       </div>
-    </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs" role="tablist">
+        <button class="tab-btn active" id="tab-login" role="tab" aria-selected="true" aria-controls="section-login" onclick="switchTab('login')">
+          Đăng nhập
+        </button>
+        <button class="tab-btn" id="tab-register" role="tab" aria-selected="false" aria-controls="section-register" onclick="switchTab('register')">
+          Đăng ký
+        </button>
+      </div>
+
+      <!-- ===================== LOGIN SECTION ===================== -->
+      <div class="form-section active" id="section-login" role="tabpanel">
+        <h2 class="form-title">Chào mừng trở lại 👋</h2>
+        <p class="form-subtitle">Đăng nhập để tiếp tục vào hệ thống</p>
+
+        <div class="alert alert-error" id="login-alert" role="alert"></div>
+
+        <form id="login-form" novalidate>
+          <div class="field">
+            <label for="login-username">Tên đăng nhập hoặc Email</label>
+            <input
+              id="login-username"
+              name="username"
+              type="text"
+              placeholder="Nhập tên đăng nhập hoặc email"
+              autocomplete="username"
+              required
+            />
+          </div>
+
+          <div class="field">
+            <label for="login-password">Mật khẩu</label>
+            <div class="field-password">
+              <input
+                id="login-password"
+                name="password"
+                type="password"
+                placeholder="Nhập mật khẩu"
+                autocomplete="current-password"
+                required
+              />
+              <button type="button" class="toggle-pw" aria-label="Hiện mật khẩu" onclick="togglePw('login-password', this)">👁️</button>
+            </div>
+          </div>
+
+          <button class="btn-submit" type="submit" id="login-btn">Đăng nhập</button>
+        </form>
+
+        <div class="auth-footer">
+          Chưa có tài khoản?
+          <a href="#" onclick="switchTab('register'); return false;">Đăng ký ngay</a>
+        </div>
+      </div>
+
+      <!-- ===================== REGISTER SECTION ===================== -->
+      <div class="form-section" id="section-register" role="tabpanel">
+        <h2 class="form-title">Tạo tài khoản mới ✨</h2>
+        <p class="form-subtitle">Điền thông tin để bắt đầu sử dụng LinguaHub</p>
+
+        <div class="alert alert-error" id="register-alert" role="alert"></div>
+        <div class="alert alert-success" id="register-success" role="alert"></div>
+
+        <form id="register-form" novalidate>
+          <div class="field-row">
+            <div class="field">
+              <label for="reg-name">Họ tên <span style="color:#dc2626">*</span></label>
+              <input id="reg-name" name="name" type="text" placeholder="Nguyễn Văn A" required />
+            </div>
+            <div class="field">
+              <label for="reg-phone">Số điện thoại <span style="color:#dc2626">*</span></label>
+              <input id="reg-phone" name="phone" type="tel" placeholder="0901234567" required />
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="reg-email">Email <span style="color:#dc2626">*</span></label>
+            <input id="reg-email" name="email" type="email" placeholder="example@email.com" autocomplete="email" required />
+          </div>
+
+          <div class="field">
+            <label for="reg-role">Vai trò</label>
+            <select id="reg-role" name="role">
+              <option value="student">Học viên</option>
+              <option value="teacher">Giảng viên</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label for="reg-username">Tên đăng nhập <span style="color:#dc2626">*</span></label>
+            <input id="reg-username" name="username" type="text" placeholder="Chọn tên đăng nhập" autocomplete="username" required />
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label for="reg-password">Mật khẩu <span style="color:#dc2626">*</span></label>
+              <div class="field-password">
+                <input id="reg-password" name="password" type="password" placeholder="Tối thiểu 6 ký tự" autocomplete="new-password" required />
+                <button type="button" class="toggle-pw" aria-label="Hiện mật khẩu" onclick="togglePw('reg-password', this)">👁️</button>
+              </div>
+            </div>
+            <div class="field">
+              <label for="reg-confirm">Xác nhận mật khẩu <span style="color:#dc2626">*</span></label>
+              <div class="field-password">
+                <input id="reg-confirm" name="confirmPassword" type="password" placeholder="Nhập lại mật khẩu" autocomplete="new-password" required />
+                <button type="button" class="toggle-pw" aria-label="Hiện mật khẩu" onclick="togglePw('reg-confirm', this)">👁️</button>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn-submit" type="submit" id="register-btn">Tạo tài khoản</button>
+        </form>
+
+        <div class="auth-footer">
+          Đã có tài khoản?
+          <a href="#" onclick="switchTab('login'); return false;">Đăng nhập ngay</a>
+        </div>
+      </div>
+
+    </div><!-- /.auth-card -->
 
     <script src="js/auth.js"></script>
-    <script src="js/login.js"></script>
+    <script>
+      // =============================================
+      // TAB SWITCHING
+      // =============================================
+      function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.classList.remove('active');
+          btn.setAttribute('aria-selected', 'false');
+        });
+        document.querySelectorAll('.form-section').forEach(s => s.classList.remove('active'));
+
+        document.getElementById('tab-' + tab).classList.add('active');
+        document.getElementById('tab-' + tab).setAttribute('aria-selected', 'true');
+        document.getElementById('section-' + tab).classList.add('active');
+
+        // Clear alerts
+        document.querySelectorAll('.alert').forEach(a => { a.classList.remove('show'); a.textContent = ''; });
+      }
+
+      // Check URL param to pre-select tab
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('tab') === 'register') switchTab('register');
+
+      // =============================================
+      // TOGGLE PASSWORD VISIBILITY
+      // =============================================
+      function togglePw(inputId, btn) {
+        const input = document.getElementById(inputId);
+        if (input.type === 'password') {
+          input.type = 'text';
+          btn.textContent = '🙈';
+        } else {
+          input.type = 'password';
+          btn.textContent = '👁️';
+        }
+      }
+
+      // =============================================
+      // SHOW ALERT
+      // =============================================
+      function showAlert(id, message, type = 'error') {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.className = 'alert show alert-' + type;
+        el.textContent = message;
+        el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
+      function hideAlert(id) {
+        const el = document.getElementById(id);
+        if (el) { el.classList.remove('show'); el.textContent = ''; }
+      }
+
+      // =============================================
+      // LOGIN FORM
+      // =============================================
+      document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideAlert('login-alert');
+
+        const form = e.target;
+        const username = form.username.value.trim();
+        const password = form.password.value;
+        const btn = document.getElementById('login-btn');
+
+        if (!username || !password) {
+          showAlert('login-alert', '⚠️ Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.');
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Đang xác thực...';
+
+        try {
+          const result = await login(username, password);
+
+          if (result.success) {
+            btn.textContent = '✓ Thành công!';
+            const role = result.user?.role;
+            setTimeout(() => {
+              if (role === 'admin') window.location.href = 'admin.html';
+              else if (role === 'teacher') window.location.href = 'teacher.html';
+              else window.location.href = 'student.html';
+            }, 400);
+          } else {
+            showAlert('login-alert', '❌ ' + (result.message || 'Tên đăng nhập hoặc mật khẩu không đúng.'));
+            btn.disabled = false;
+            btn.textContent = 'Đăng nhập';
+          }
+        } catch (err) {
+          showAlert('login-alert', '❌ Không thể kết nối đến máy chủ. Vui lòng thử lại.');
+          btn.disabled = false;
+          btn.textContent = 'Đăng nhập';
+        }
+      });
+
+      // =============================================
+      // REGISTER FORM
+      // =============================================
+      document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        hideAlert('register-alert');
+        hideAlert('register-success');
+
+        const form = e.target;
+        const name       = form.name.value.trim();
+        const phone      = form.phone.value.trim();
+        const email      = form.email.value.trim();
+        const role       = form.role.value;
+        const username   = form.username.value.trim();
+        const password   = form.password.value;
+        const confirm    = form.confirmPassword.value;
+        const btn        = document.getElementById('register-btn');
+
+        if (!name || !phone || !email || !username || !password || !confirm) {
+          showAlert('register-alert', '⚠️ Vui lòng điền đầy đủ tất cả các trường bắt buộc (*).');
+          return;
+        }
+
+        if (password.length < 6) {
+          showAlert('register-alert', '⚠️ Mật khẩu phải có ít nhất 6 ký tự.');
+          return;
+        }
+
+        if (password !== confirm) {
+          showAlert('register-alert', '⚠️ Mật khẩu xác nhận không khớp. Vui lòng kiểm tra lại.');
+          return;
+        }
+
+        btn.disabled = true;
+        btn.textContent = 'Đang xử lý...';
+
+        try {
+          const result = await register({ name, phone, email, role, username, password, confirmPassword: confirm });
+
+          if (result.success) {
+            form.reset();
+            showAlert('register-success', '🎉 Đăng ký thành công! Đang chuyển sang trang đăng nhập...', 'success');
+            setTimeout(() => switchTab('login'), 2000);
+          } else {
+            const msg = result.errors ? Object.values(result.errors)[0] : result.message;
+            showAlert('register-alert', '❌ ' + (msg || 'Đăng ký không thành công.'));
+          }
+        } catch (err) {
+          showAlert('register-alert', '❌ Không thể kết nối đến máy chủ. Vui lòng thử lại.');
+        } finally {
+          if (btn.textContent === 'Đang xử lý...') {
+            btn.disabled = false;
+            btn.textContent = 'Tạo tài khoản';
+          }
+        }
+      });
+    </script>
   </body>
 </html>
