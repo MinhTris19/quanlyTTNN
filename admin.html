@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LinguaHub | Trang Quản Trị Hệ Thống</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      body { background: #f1f5f9; margin: 0; font-family: 'Poppins', sans-serif; }
+
+      /* ===== Horizontal Header ===== */
+      .main-header {
+        position: sticky;
+        top: 0;
+        z-index: 900;
+        background: #2563eb;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      }
+      .header-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+        display: flex;
+        align-items: stretch;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0;
+      }
+      .header-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .header-logo .logo-icon { font-size: 1.7rem; line-height: 1; }
+      .header-logo .logo-text { font-size: 1.15rem; }
+      .header-logo .logo-sub { display: block; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.08em; color: rgba(255,255,255,0.75); text-transform: uppercase; }
+      .hamburger-btn {
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+      }
+      .hamburger-btn span { width: 26px; height: 3px; background: #fff; border-radius: 2px; display: block; }
+      .header-nav {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+      }
+      .nav-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 14px 16px;
+        border-radius: 0;
+        color: rgba(255,255,255,0.85);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.82rem;
+        letter-spacing: 0.02em;
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        font-family: inherit;
+        text-transform: uppercase;
+      }
+      .nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+      .nav-item.active { color: #fff; border-bottom-color: #fff; background: rgba(255,255,255,0.12); }
+      .nav-item.nav-logout { color: rgba(255,255,255,0.7); margin-left: 0; }
+      .nav-item.nav-logout:hover { background: rgba(220,38,38,0.4); }
+      .nav-icon { font-size: 1rem; }
+
+      @media (max-width: 860px) {
+        .hamburger-btn { display: flex; }
+        .header-nav {
+          display: none;
+          width: 100%;
+          flex-direction: column;
+          align-items: stretch;
+          background: #1e3a8a;
+          border-radius: 12px;
+          padding: 8px;
+          margin-top: 4px;
+        }
+        .header-nav.open { display: flex; }
+        .nav-item { width: 100%; justify-content: flex-start; }
+        .nav-item.nav-logout { margin-left: 0; margin-top: 4px; }
+      }
+
+      /* Dashboard Main Container */
+      .dashboard { max-width: 1100px; margin: 28px auto 60px; padding: 28px; background: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
+      .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #f1f5f9; }
+      .topbar h1 { color: #0f172a; font-size: 1.8rem; margin: 0; font-weight: 700; }
+      .eyebrow { color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; margin: 0 0 4px; }
+
+      /* Alerts */
+      .alert { padding: 12px 16px; border-radius: 10px; margin-bottom: 20px; font-weight: 500; display: none; }
+      .alert-success { background: #dcfce7; color: #166534; border-left: 4px solid #16a34a; }
+      .alert-error { background: #fee2e2; color: #991b1b; border-left: 4px solid #dc2626; }
+
+      /* Stats Grid */
+      .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+      .stat-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px; transition: all 0.2s ease; border-top: 4px solid #2563eb; }
+      .stat-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.06); }
+      .stat-card h4 { margin: 0 0 6px; color: #64748b; font-size: 0.85rem; font-weight: 600; text-transform: uppercase; }
+      .stat-card .value { font-size: 2rem; font-weight: 700; color: #0f172a; margin: 0; }
+
+      /* Sections & Tabs */
+      .section-view { display: none; }
+      .section-view.active { display: block; }
+
+      .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+      .section-header h2 { margin: 0; font-size: 1.4rem; color: #0f172a; }
+
+      /* Table Styles */
+      .data-table-wrap { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: 12px; background: white; margin-bottom: 20px; }
+      .data-table { width: 100%; border-collapse: collapse; text-align: left; }
+      .data-table th { background: #f8fafc; padding: 12px 16px; font-weight: 600; color: #475569; font-size: 0.85rem; border-bottom: 2px solid #e2e8f0; }
+      .data-table td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; color: #1e293b; font-size: 0.9rem; }
+      .data-table tbody tr:hover { background: #f8fafc; }
+      .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+      .badge-success { background: #dcfce7; color: #166534; }
+      .badge-primary { background: #dbeafe; color: #1e40af; }
+
+      /* Buttons */
+      .btn { padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s ease; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }
+      .btn-primary { background: #2563eb; color: white; }
+      .btn-primary:hover { background: #1d4ed8; transform: translateY(-1px); }
+      .btn-danger { background: #fee2e2; color: #b91c1c; }
+      .btn-danger:hover { background: #fecaca; }
+      .btn-secondary { background: #f1f5f9; color: #475569; }
+      .btn-secondary:hover { background: #e2e8f0; }
+
+      /* Modal */
+      .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); z-index: 1000; backdrop-filter: blur(3px); }
+      .modal.open { display: flex; align-items: center; justify-content: center; }
+      .modal-content { background: white; border-radius: 16px; padding: 28px; max-width: 520px; width: 90%; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 45px rgba(0,0,0,0.2); }
+      .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #e2e8f0; }
+      .modal-header h3 { margin: 0; color: #0f172a; font-size: 1.3rem; }
+      .close-btn { background: none; border: none; font-size: 22px; cursor: pointer; color: #94a3b8; }
+      .close-btn:hover { color: #0f172a; }
+
+      .form-group { margin-bottom: 14px; }
+      .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 6px; }
+      .form-group input, .form-group select, .form-group textarea {
+        width: 100%; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.9rem; box-sizing: border-box;
+      }
+      .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+        outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      }
+      .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; padding-top: 14px; border-top: 1px solid #e2e8f0; }
+
+      /* AI Floating Button & Panel */
+      .ai-toggle { position: fixed; right: 24px; bottom: 24px; width: 60px; height: 60px; border-radius: 50%; border: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; font-size: 28px; cursor: pointer; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4); z-index: 950; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; }
+      .ai-toggle:hover { transform: scale(1.08); }
+      .ai-panel { position: fixed; right: 24px; bottom: 94px; width: min(92vw, 380px); background: white; border: 1px solid #cbd5e1; border-radius: 20px; box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2); padding: 18px; display: none; z-index: 950; }
+      .ai-panel.open { display: block; }
+      .ai-panel h3 { margin: 0 0 4px; color: #0f172a; font-size: 1.1rem; }
+      .ai-panel p { margin: 0 0 12px; color: #64748b; font-size: 0.8rem; }
+      .ai-panel textarea { width: 100%; min-height: 80px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px; font-family: inherit; font-size: 0.85rem; box-sizing: border-box; resize: vertical; }
+      .ai-panel .answer { margin-top: 12px; padding: 12px; background: #f8fafc; border-radius: 10px; color: #1e3a8a; font-size: 0.85rem; line-height: 1.5; border: 1px solid #e2e8f0; max-height: 200px; overflow-y: auto; white-space: pre-line; }
+
+      @media (max-width: 768px) {
+        .stats-grid { grid-template-columns: 1fr 1fr; }
+        .dashboard { padding: 16px; margin: 16px auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="main-header">
+      <div class="header-inner">
+        <a class="header-logo" href="javascript:void(0)" onclick="switchTab('overview')">
+          <span class="logo-icon">🎓</span>
+          <span>
+            <span class="logo-text">LinguaHub</span>
+            <span class="logo-sub">Quản trị viên</span>
+          </span>
+        </a>
+        <button class="hamburger-btn" type="button" onclick="toggleHeaderNav()" aria-label="Mở menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+        <nav class="header-nav" id="header-nav">
+          <button class="nav-item active" type="button" onclick="switchTab('overview')"><span class="nav-icon">📊</span>Tổng quan</button>
+          <button class="nav-item" type="button" onclick="switchTab('students')"><span class="nav-icon">👥</span>Học viên</button>
+          <button class="nav-item" type="button" onclick="switchTab('teachers')"><span class="nav-icon">👨‍🏫</span>Giảng viên</button>
+          <button class="nav-item" type="button" onclick="switchTab('classes')"><span class="nav-icon">📚</span>Lớp học</button>
+          <button class="nav-item" type="button" onclick="toggleAdminAi()"><span class="nav-icon">🤖</span>AI Quản trị</button>
+          <button class="nav-item nav-logout" type="button" onclick="logout()"><span class="nav-icon">🚪</span>Đăng xuất</button>
+        </nav>
+      </div>
+    </header>
+
+    <div class="dashboard">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">Hệ thống quản lý trung tâm</p>
+          <h1 id="page-heading">Bảng điều khiển Quản trị</h1>
+        </div>
+        <div id="user-info-badge" class="badge badge-primary" style="padding: 8px 14px; font-size: 0.85rem;">
+          Admin
+        </div>
+      </div>
+
+      <!-- Live Alert Banner -->
+      <div id="alert-banner" class="alert"></div>
+
+      <!-- ============================================
+           TAB 1: TỔNG QUAN (OVERVIEW)
+           ============================================ -->
+      <div id="tab-overview" class="section-view active">
+        <div class="stats-grid">
+          <div class="stat-card" style="border-top-color: #2563eb;">
+            <h4>Tổng học viên</h4>
+            <p class="value" id="stat-students">0</p>
+          </div>
+          <div class="stat-card" style="border-top-color: #16a34a;">
+            <h4>Tổng giảng viên</h4>
+            <p class="value" id="stat-teachers">0</p>
+          </div>
+          <div class="stat-card" style="border-top-color: #7c3aed;">
+            <h4>Lớp học hoạt động</h4>
+            <p class="value" id="stat-classes">0</p>
+          </div>
+          <div class="stat-card" style="border-top-color: #ea580c;">
+            <h4>Tỷ lệ chuyên cần</h4>
+            <p class="value" id="stat-attendance">100%</p>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+            <h3 style="margin-top:0; color:#0f172a;">Truy cập nhanh Quản lý</h3>
+            <p style="color:#64748b; font-size:0.9rem;">Thực hiện các thao tác CRUD dữ liệu toàn hệ thống.</p>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px;">
+              <button class="btn btn-primary" onclick="switchTab('students')">Quản lý Học viên</button>
+              <button class="btn btn-primary" onclick="switchTab('teachers')">Quản lý Giảng viên</button>
+              <button class="btn btn-primary" onclick="switchTab('classes')">Quản lý Lớp học</button>
+            </div>
+          </div>
+          <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 20px;">
+            <h3 style="margin-top:0; color:#0f172a;">Trợ lý AI Quản trị</h3>
+            <p style="color:#64748b; font-size:0.9rem;">AI có thể truy vấn số liệu thống kê, báo cáo học viên, lớp học theo thời gian thực.</p>
+            <button class="btn btn-primary" style="background:#f59e0b;" onclick="toggleAdminAi()">Mở Trợ lý AI</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================
+           TAB 2: QUẢN LÝ HỌC VIÊN
+           ============================================ -->
+      <div id="tab-students" class="section-view">
+        <div class="section-header">
+          <h2>Danh sách Học viên</h2>
+          <button class="btn btn-primary" onclick="openAddStudentModal()">+ Thêm Học Viên Mới</button>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mã HV</th>
+                <th>Họ và Tên</th>
+                <th>Email</th>
+                <th>Tên Đăng Nhập</th>
+                <th>Số Điện Thoại</th>
+                <th>Lớp Đang Học</th>
+                <th>Trạng Thái</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="student-table-body">
+              <tr><td colspan="8" style="text-align:center;">Đang tải dữ liệu...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============================================
+           TAB 3: QUẢN LÝ GIẢNG VIÊN
+           ============================================ -->
+      <div id="tab-teachers" class="section-view">
+        <div class="section-header">
+          <h2>Danh sách Giảng viên</h2>
+          <button class="btn btn-primary" onclick="openAddTeacherModal()">+ Thêm Giảng Viên Mới</button>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mã GV</th>
+                <th>Họ và Tên</th>
+                <th>Email</th>
+                <th>Tên Đăng Nhập</th>
+                <th>Số Điện Thoại</th>
+                <th>Chuyên Môn / Bằng Cấp</th>
+                <th>Lớp Phụ Trách</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="teacher-table-body">
+              <tr><td colspan="8" style="text-align:center;">Đang tải dữ liệu...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============================================
+           TAB 4: QUẢN LÝ LỚP HỌC
+           ============================================ -->
+      <div id="tab-classes" class="section-view">
+        <div class="section-header">
+          <h2>Danh sách Lớp học</h2>
+          <button class="btn btn-primary" onclick="openAddClassModal()">+ Thêm Lớp Học Mới</button>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mã Lớp</th>
+                <th>Tên Lớp Học</th>
+                <th>Giảng Viên Phụ Trách</th>
+                <th>Sĩ Số</th>
+                <th>Mô Tả</th>
+                <th>Trạng Thái</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="class-table-body">
+              <tr><td colspan="7" style="text-align:center;">Đang tải dữ liệu...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================
+         MODAL: THÊM HỌC VIÊN
+         ============================================ -->
+    <div id="modal-student" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Thêm Học Viên Mới</h3>
+          <button class="close-btn" onclick="closeModal('modal-student')">&times;</button>
+        </div>
+        <form id="form-add-student">
+          <div class="form-group">
+            <label>Họ và Tên (*)</label>
+            <input type="text" id="stu-name" placeholder="Ví dụ: Nguyễn Văn Hoàng" required />
+          </div>
+          <div class="form-group">
+            <label>Email (*)</label>
+            <input type="email" id="stu-email" placeholder="hoang@gmail.com" required />
+          </div>
+          <div class="form-group">
+            <label>Số Điện Thoại (*)</label>
+            <input type="tel" id="stu-phone" placeholder="0901234567" required />
+          </div>
+          <div class="form-group">
+            <label>Tên Đăng Nhập (*)</label>
+            <input type="text" id="stu-username" placeholder="hoangnv" required />
+          </div>
+          <div class="form-group">
+            <label>Mật Khẩu</label>
+            <input type="password" id="stu-password" placeholder="Mặc định: 123456" />
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" type="button" onclick="closeModal('modal-student')">Hủy</button>
+            <button class="btn btn-primary" type="submit">Lưu Học Viên</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============================================
+         MODAL: THÊM GIẢNG VIÊN
+         ============================================ -->
+    <div id="modal-teacher" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Thêm Giảng Viên Mới</h3>
+          <button class="close-btn" onclick="closeModal('modal-teacher')">&times;</button>
+        </div>
+        <form id="form-add-teacher">
+          <div class="form-group">
+            <label>Họ và Tên Giảng Viên (*)</label>
+            <input type="text" id="tea-name" placeholder="Ví dụ: ThS. Trần Minh Đức" required />
+          </div>
+          <div class="form-group">
+            <label>Email (*)</label>
+            <input type="email" id="tea-email" placeholder="ductran@linguahub.local" required />
+          </div>
+          <div class="form-group">
+            <label>Số Điện Thoại (*)</label>
+            <input type="tel" id="tea-phone" placeholder="0988776655" required />
+          </div>
+          <div class="form-group">
+            <label>Chuyên Môn / Bằng Cấp</label>
+            <input type="text" id="tea-qualification" placeholder="IELTS 8.5, TESOL Certified" />
+          </div>
+          <div class="form-group">
+            <label>Tên Đăng Nhập (*)</label>
+            <input type="text" id="tea-username" placeholder="ductm" required />
+          </div>
+          <div class="form-group">
+            <label>Mật Khẩu</label>
+            <input type="password" id="tea-password" placeholder="Mặc định: 123456" />
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" type="button" onclick="closeModal('modal-teacher')">Hủy</button>
+            <button class="btn btn-primary" type="submit">Lưu Giảng Viên</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ============================================
+         MODAL: THÊM LỚP HỌC
+         ============================================ -->
+    <div id="modal-class" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Thêm Lớp Học Mới</h3>
+          <button class="close-btn" onclick="closeModal('modal-class')">&times;</button>
+        </div>
+        <form id="form-add-class">
+          <div class="form-group">
+            <label>Tên Lớp Học (*)</label>
+            <input type="text" id="cls-name" placeholder="Ví dụ: IELTS Master 7.5" required />
+          </div>
+          <div class="form-group">
+            <label>Mã Lớp (*)</label>
+            <input type="text" id="cls-code" placeholder="IELTS-75A" required />
+          </div>
+          <div class="form-group">
+            <label>Giảng Viên Phụ Trách (*)</label>
+            <select id="cls-teacher" required>
+              <option value="">-- Chọn giảng viên --</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Sĩ Số Tối Đa</label>
+            <input type="number" id="cls-max" value="25" min="5" max="50" />
+          </div>
+          <div class="form-group">
+            <label>Mô Tả Khóa Học</label>
+            <textarea id="cls-desc" rows="3" placeholder="Thông tin chi tiết về lộ trình và lớp học"></textarea>
+          </div>
+          <div class="modal-actions">
+            <button class="btn btn-secondary" type="button" onclick="closeModal('modal-class')">Hủy</button>
+            <button class="btn btn-primary" type="submit">Tạo Lớp Học</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- AI Toggle & Panel -->
+    <button class="ai-toggle" type="button" onclick="toggleAdminAi()" aria-label="Mở trợ lý AI">🤖</button>
+    <div class="ai-panel" id="admin-ai-panel">
+      <h3>AI Quản Trị Hệ Thống</h3>
+      <p>Hỗ trợ thống kê học viên, giảng viên, lớp học và tình trạng trung tâm.</p>
+      <textarea id="admin-ai-input" placeholder="Ví dụ: Trung tâm có bao nhiêu học viên?"></textarea>
+      <button class="btn btn-primary" style="margin-top:8px; width:100%; justify-content:center;" type="button" onclick="askAdminAi()">Gửi câu hỏi AI</button>
+      <div class="answer" id="admin-ai-answer" style="display:none;"></div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/ai-assistant.js"></script>
+    <script>
+      // Verify admin session
+      const session = getSession();
+      if (!session || (session.role !== 'admin' && !session.isAdmin)) {
+        window.location.href = 'admin-login.html';
+      }
+
+      document.getElementById('user-info-badge').textContent = `Admin: ${session.name || session.username}`;
+
+      const adminAssistant = createRoleAssistant('admin');
+
+      // Tab Management
+      function switchTab(tabKey) {
+        document.querySelectorAll('.section-view').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+        const targetTab = document.getElementById(`tab-${tabKey}`);
+        if (targetTab) targetTab.classList.add('active');
+
+        const navBtn = Array.from(document.querySelectorAll('.nav-item')).find(b => b.textContent.toLowerCase().includes(tabKey === 'overview' ? 'tổng quan' : tabKey === 'students' ? 'học viên' : tabKey === 'teachers' ? 'giảng viên' : 'lớp học'));
+        if (navBtn) navBtn.classList.add('active');
+
+        const headings = {
+          overview: 'Bảng điều khiển Quản trị',
+          students: 'Quản lý Học viên',
+          teachers: 'Quản lý Giảng viên',
+          classes: 'Quản lý Lớp học'
+        };
+        document.getElementById('page-heading').textContent = headings[tabKey] || 'Bảng điều khiển';
+
+        if (tabKey === 'overview') loadOverviewStats();
+        if (tabKey === 'students') loadStudents();
+        if (tabKey === 'teachers') loadTeachers();
+        if (tabKey === 'classes') loadClasses();
+      }
+
+      // Alerts
+      function showAlert(msg, type = 'success') {
+        const banner = document.getElementById('alert-banner');
+        banner.className = `alert alert-${type}`;
+        banner.textContent = msg;
+        banner.style.display = 'block';
+        setTimeout(() => { banner.style.display = 'none'; }, 4000);
+      }
+
+      // Modal helpers
+      function openModal(id) { document.getElementById(id).classList.add('open'); }
+      function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+
+      function openAddStudentModal() {
+        document.getElementById('form-add-student').reset();
+        openModal('modal-student');
+      }
+
+      function openAddTeacherModal() {
+        document.getElementById('form-add-teacher').reset();
+        openModal('modal-teacher');
+      }
+
+      async function openAddClassModal() {
+        document.getElementById('form-add-class').reset();
+        // Load teachers into dropdown
+        try {
+          const { status, data } = await apiCall('/api/teachers');
+          if (status === 200 && data.success) {
+            const select = document.getElementById('cls-teacher');
+            select.innerHTML = '<option value="">-- Chọn giảng viên --</option>' +
+              data.data.map(t => `<option value="${t.Id}">${t.FullName} (${t.Qualification || 'Giảng viên'})</option>`).join('');
+          }
+        } catch (e) {
+          console.error(e);
+        }
+        openModal('modal-class');
+      }
+
+      // ============================================
+      // DATA FETCHING & RENDERING
+      // ============================================
+
+      async function loadOverviewStats() {
+        try {
+          const { status, data } = await apiCall('/api/admin/overview');
+          if (status === 200 && data.success) {
+            document.getElementById('stat-students').textContent = data.data.studentCount || 0;
+            document.getElementById('stat-teachers').textContent = data.data.teacherCount || 0;
+            document.getElementById('stat-classes').textContent = data.data.classCount || 0;
+            document.getElementById('stat-attendance').textContent = (data.data.attendanceRate || 100) + '%';
+          }
+        } catch (err) {
+          console.error('Error loading overview:', err);
+        }
+      }
+
+      async function loadStudents() {
+        const tbody = document.getElementById('student-table-body');
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Đang tải...</td></tr>';
+        try {
+          const { status, data } = await apiCall('/api/students');
+          if (status === 200 && data.success && data.data.length > 0) {
+            tbody.innerHTML = data.data.map(s => `
+              <tr>
+                <td><strong>HV${String(s.Id).padStart(3, '0')}</strong></td>
+                <td>${s.FullName}</td>
+                <td>${s.Email}</td>
+                <td><code>${s.Username}</code></td>
+                <td>${s.Phone || 'N/A'}</td>
+                <td>${s.Classes && s.Classes.length > 0 ? s.Classes.map(c => `<span class="badge badge-primary">${c}</span>`).join(' ') : '<span style="color:#94a3b8;">Chưa xếp lớp</span>'}</td>
+                <td><span class="badge badge-success">✓ Hoạt động</span></td>
+                <td>
+                  <button class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="deleteStudent(${s.Id}, '${s.FullName}')">Xóa</button>
+                </td>
+              </tr>
+            `).join('');
+          } else {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#64748b;">Chưa có học viên nào trong hệ thống.</td></tr>';
+          }
+        } catch (err) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#dc2626;">Lỗi tải dữ liệu học viên.</td></tr>';
+        }
+      }
+
+      async function loadTeachers() {
+        const tbody = document.getElementById('teacher-table-body');
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;">Đang tải...</td></tr>';
+        try {
+          const { status, data } = await apiCall('/api/teachers');
+          if (status === 200 && data.success && data.data.length > 0) {
+            tbody.innerHTML = data.data.map(t => `
+              <tr>
+                <td><strong>GV${String(t.Id).padStart(3, '0')}</strong></td>
+                <td>${t.FullName}</td>
+                <td>${t.Email}</td>
+                <td><code>${t.Username}</code></td>
+                <td>${t.Phone || 'N/A'}</td>
+                <td>${t.Qualification || 'N/A'}</td>
+                <td>${t.Classes && t.Classes.length > 0 ? t.Classes.map(c => `<span class="badge badge-primary">${c}</span>`).join(' ') : '<span style="color:#94a3b8;">Chưa phụ trách</span>'}</td>
+                <td>
+                  <button class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="deleteTeacher(${t.Id}, '${t.FullName}')">Xóa</button>
+                </td>
+              </tr>
+            `).join('');
+          } else {
+            tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#64748b;">Chưa có giảng viên nào.</td></tr>';
+          }
+        } catch (err) {
+          tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; color:#dc2626;">Lỗi tải dữ liệu giảng viên.</td></tr>';
+        }
+      }
+
+      async function loadClasses() {
+        const tbody = document.getElementById('class-table-body');
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Đang tải...</td></tr>';
+        try {
+          const { status, data } = await apiCall('/api/classes');
+          if (status === 200 && data.success && data.data.length > 0) {
+            tbody.innerHTML = data.data.map(c => `
+              <tr>
+                <td><strong>${c.Code}</strong></td>
+                <td>${c.Name}</td>
+                <td>${c.TeacherName}</td>
+                <td><span class="badge badge-primary">${c.StudentCount || 0}/${c.MaxStudents || 30} HV</span></td>
+                <td>${c.Description || 'Không có mô tả'}</td>
+                <td><span class="badge badge-success">🟢 Đang học</span></td>
+                <td>
+                  <button class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="deleteClass(${c.Id}, '${c.Name}')">Xóa</button>
+                </td>
+              </tr>
+            `).join('');
+          } else {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#64748b;">Chưa có lớp học nào.</td></tr>';
+          }
+        } catch (err) {
+          tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#dc2626;">Lỗi tải dữ liệu lớp học.</td></tr>';
+        }
+      }
+
+      // ============================================
+      // FORM SUBMISSIONS (CREATE OPERATIONS)
+      // ============================================
+
+      // Create Student
+      document.getElementById('form-add-student').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+          name: document.getElementById('stu-name').value.trim(),
+          email: document.getElementById('stu-email').value.trim(),
+          phone: document.getElementById('stu-phone').value.trim(),
+          username: document.getElementById('stu-username').value.trim(),
+          password: document.getElementById('stu-password').value.trim() || '123456'
+        };
+
+        const { status, data } = await apiCall('/api/students', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        if (status === 201 && data.success) {
+          showAlert(`✓ ${data.message}: ${payload.name}`);
+          closeModal('modal-student');
+          loadStudents();
+          loadOverviewStats();
+        } else {
+          const errMsg = data.errors ? Object.values(data.errors)[0] : data.message;
+          alert('❌ ' + (errMsg || 'Không thể thêm học viên'));
+        }
+      });
+
+      // Create Teacher
+      document.getElementById('form-add-teacher').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+          name: document.getElementById('tea-name').value.trim(),
+          email: document.getElementById('tea-email').value.trim(),
+          phone: document.getElementById('tea-phone').value.trim(),
+          qualification: document.getElementById('tea-qualification').value.trim(),
+          username: document.getElementById('tea-username').value.trim(),
+          password: document.getElementById('tea-password').value.trim() || '123456'
+        };
+
+        const { status, data } = await apiCall('/api/teachers', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        if (status === 201 && data.success) {
+          showAlert(`✓ ${data.message}: ${payload.name}`);
+          closeModal('modal-teacher');
+          loadTeachers();
+          loadOverviewStats();
+        } else {
+          const errMsg = data.errors ? Object.values(data.errors)[0] : data.message;
+          alert('❌ ' + (errMsg || 'Không thể thêm giảng viên'));
+        }
+      });
+
+      // Create Class
+      document.getElementById('form-add-class').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const payload = {
+          name: document.getElementById('cls-name').value.trim(),
+          code: document.getElementById('cls-code').value.trim(),
+          teacherId: document.getElementById('cls-teacher').value,
+          maxStudents: document.getElementById('cls-max').value,
+          description: document.getElementById('cls-desc').value.trim()
+        };
+
+        const { status, data } = await apiCall('/api/classes', {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+
+        if (status === 201 && data.success) {
+          showAlert(`✓ ${data.message}: ${payload.name}`);
+          closeModal('modal-class');
+          loadClasses();
+          loadOverviewStats();
+        } else {
+          const errMsg = data.errors ? Object.values(data.errors)[0] : data.message;
+          alert('❌ ' + (errMsg || 'Không thể thêm lớp học'));
+        }
+      });
+
+      // ============================================
+      // DELETE OPERATIONS
+      // ============================================
+      async function deleteStudent(id, name) {
+        if (!confirm(`Bạn có chắc chắn muốn xóa học viên "${name}" khỏi hệ thống?`)) return;
+        const { status, data } = await apiCall(`/api/students/${id}`, { method: 'DELETE' });
+        if (status === 200 && data.success) {
+          showAlert(`✓ Đã xóa học viên ${name}`);
+          loadStudents();
+          loadOverviewStats();
+        } else {
+          alert('❌ ' + (data.message || 'Xóa học viên thất bại'));
+        }
+      }
+
+      async function deleteTeacher(id, name) {
+        if (!confirm(`Bạn có chắc chắn muốn xóa giảng viên "${name}"?`)) return;
+        const { status, data } = await apiCall(`/api/teachers/${id}`, { method: 'DELETE' });
+        if (status === 200 && data.success) {
+          showAlert(`✓ Đã xóa giảng viên ${name}`);
+          loadTeachers();
+          loadOverviewStats();
+        } else {
+          alert('❌ ' + (data.message || 'Xóa giảng viên thất bại'));
+        }
+      }
+
+      async function deleteClass(id, name) {
+        if (!confirm(`Bạn có chắc chắn muốn xóa lớp học "${name}"?`)) return;
+        const { status, data } = await apiCall(`/api/classes/${id}`, { method: 'DELETE' });
+        if (status === 200 && data.success) {
+          showAlert(`✓ Đã xóa lớp học ${name}`);
+          loadClasses();
+          loadOverviewStats();
+        } else {
+          alert('❌ ' + (data.message || 'Xóa lớp học thất bại'));
+        }
+      }
+
+      // ============================================
+      // AI ASSISTANT
+      // ============================================
+      function toggleAdminAi() {
+        const panel = document.getElementById('admin-ai-panel');
+        if (panel) panel.classList.toggle('open');
+      }
+
+      async function askAdminAi() {
+        const input = document.getElementById('admin-ai-input');
+        const answer = document.getElementById('admin-ai-answer');
+        if (!input || !answer) return;
+
+        const question = input.value.trim();
+        if (!question) {
+          alert('Vui lòng nhập câu hỏi cho AI');
+          return;
+        }
+
+        answer.style.display = 'block';
+        answer.textContent = '⏳ AI đang phân tích dữ liệu hệ thống...';
+        answer.style.color = '#64748b';
+
+        try {
+          const reply = await adminAssistant.askAI(question);
+          answer.textContent = reply;
+          answer.style.color = reply.includes('❌') ? '#dc2626' : '#1e3a8a';
+        } catch (err) {
+          answer.textContent = '❌ Lỗi kết nối AI: ' + err.message;
+          answer.style.color = '#dc2626';
+        }
+      }
+
+      function toggleHeaderNav() {
+        const nav = document.getElementById('header-nav');
+        const btn = document.querySelector('.hamburger-btn');
+        const isOpen = nav.classList.toggle('open');
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      }
+
+      // Initial load
+      loadOverviewStats();
+    </script>
+  </body>
+</html>

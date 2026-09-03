@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>LinguaHub | Trang Học Viên</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="css/style.css" />
+    <style>
+      body { background: #f1f5f9; margin: 0; font-family: 'Poppins', sans-serif; }
+
+      /* Header */
+      .main-header {
+        position: sticky;
+        top: 0;
+        z-index: 900;
+        background: #2563eb;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+      }
+      .header-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 24px;
+        display: flex;
+        align-items: stretch;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0;
+      }
+      .header-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        color: #fff;
+        text-decoration: none;
+        font-weight: 700;
+      }
+      .header-logo .logo-icon { font-size: 1.7rem; }
+      .header-logo .logo-text { font-size: 1.15rem; }
+      .header-logo .logo-sub { display: block; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.08em; color: rgba(255,255,255,0.75); text-transform: uppercase; }
+      .hamburger-btn {
+        display: none;
+        flex-direction: column;
+        gap: 5px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 6px;
+      }
+      .hamburger-btn span { width: 26px; height: 3px; background: #fff; border-radius: 2px; display: block; }
+      .header-nav {
+        display: flex;
+        align-items: stretch;
+        gap: 0;
+      }
+      .nav-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 14px 16px;
+        border-radius: 0;
+        color: rgba(255,255,255,0.85);
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.82rem;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        background: transparent;
+        border: none;
+        border-bottom: 3px solid transparent;
+        cursor: pointer;
+        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+        font-family: inherit;
+      }
+      .nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
+      .nav-item.active { color: #fff; border-bottom-color: #fff; background: rgba(255,255,255,0.12); }
+      .nav-item.nav-logout { color: rgba(255,255,255,0.7); }
+      .nav-item.nav-logout:hover { background: rgba(220,38,38,0.4); }
+
+      @media (max-width: 860px) {
+        .hamburger-btn { display: flex; }
+        .header-nav {
+          display: none;
+          width: 100%;
+          flex-direction: column;
+          align-items: stretch;
+          background: #1e3a8a;
+          border-radius: 12px;
+          padding: 8px;
+          margin-top: 4px;
+        }
+        .header-nav.open { display: flex; }
+        .nav-item { width: 100%; justify-content: flex-start; }
+      }
+
+      .dashboard { max-width: 1100px; margin: 28px auto 60px; padding: 28px; background: #ffffff; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.06); border: 1px solid #e2e8f0; }
+      .topbar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #f1f5f9; }
+      .topbar h1 { color: #0f172a; font-size: 1.8rem; margin: 0; font-weight: 700; }
+      .eyebrow { color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; margin: 0 0 4px; }
+
+      .section-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+      .section-card h2 { margin: 0 0 16px; font-size: 1.3rem; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+
+      .grid-classes { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+      .student-class-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+      .student-class-card h3 { margin: 0 0 6px; color: #0f172a; font-size: 1.15rem; }
+      .code-badge { display: inline-block; background: #eff6ff; color: #2563eb; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; margin-bottom: 10px; }
+
+      .data-table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; border: 1px solid #e2e8f0; }
+      .data-table th { background: #f1f5f9; color: #475569; padding: 12px 16px; text-align: left; font-size: 0.85rem; font-weight: 600; }
+      .data-table td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; font-size: 0.9rem; color: #1e293b; }
+      .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
+      .badge-success { background: #dcfce7; color: #166534; }
+      .badge-danger { background: #fee2e2; color: #991b1b; }
+
+      /* AI Floating Button & Panel */
+      .ai-toggle { position: fixed; right: 24px; bottom: 24px; width: 60px; height: 60px; border-radius: 50%; border: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; font-size: 28px; cursor: pointer; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4); z-index: 950; display: flex; align-items: center; justify-content: center; }
+      .ai-panel { position: fixed; right: 24px; bottom: 94px; width: min(92vw, 380px); background: white; border: 1px solid #cbd5e1; border-radius: 20px; box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2); padding: 18px; display: none; z-index: 950; }
+      .ai-panel.open { display: block; }
+      .ai-panel h3 { margin: 0 0 4px; color: #0f172a; font-size: 1.1rem; }
+      .ai-panel p { margin: 0 0 12px; color: #64748b; font-size: 0.8rem; }
+      .ai-panel textarea { width: 100%; min-height: 80px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px; font-family: inherit; font-size: 0.85rem; box-sizing: border-box; resize: vertical; }
+      .ai-panel .answer { margin-top: 12px; padding: 12px; background: #f8fafc; border-radius: 10px; color: #1e3a8a; font-size: 0.85rem; line-height: 1.5; border: 1px solid #e2e8f0; max-height: 200px; overflow-y: auto; white-space: pre-line; }
+
+      .btn { padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; font-family: inherit; }
+      .btn-primary { background: #2563eb; color: white; }
+    </style>
+  </head>
+  <body>
+    <header class="main-header">
+      <div class="header-inner">
+        <a class="header-logo" href="student.html">
+          <span class="logo-icon">🎓</span>
+          <span>
+            <span class="logo-text">LinguaHub</span>
+            <span class="logo-sub">Cổng thông tin Học viên</span>
+          </span>
+        </a>
+        <button class="hamburger-btn" type="button" onclick="toggleHeaderNav()" aria-label="Mở menu" aria-expanded="false">
+          <span></span><span></span><span></span>
+        </button>
+        <nav class="header-nav" id="header-nav">
+          <a class="nav-item active" href="student.html"><span class="nav-icon">🏠</span>Tổng quan</a>
+          <button class="nav-item" type="button" onclick="toggleStudentAi()"><span class="nav-icon">🤖</span>AI Học viên</button>
+          <button class="nav-item nav-logout" type="button" onclick="logout()"><span class="nav-icon">🚪</span>Đăng xuất</button>
+        </nav>
+      </div>
+    </header>
+
+    <div class="dashboard">
+      <div class="topbar">
+        <div>
+          <p class="eyebrow">Không gian học tập cá nhân</p>
+          <h1 id="student-name-heading">Xin chào Học viên</h1>
+        </div>
+        <div id="student-badge" style="padding: 6px 14px; background: #dcfce7; color: #166534; border-radius: 999px; font-weight: 600; font-size: 0.85rem;">
+          Học viên
+        </div>
+      </div>
+
+      <!-- Enrolled Classes -->
+      <div class="section-card">
+        <h2>📚 Lớp học đang tham gia</h2>
+        <div id="classes-container" class="grid-classes">
+          <p style="color: #64748b;">Đang tải danh sách lớp...</p>
+        </div>
+      </div>
+
+      <!-- Attendance History -->
+      <div class="section-card">
+        <h2>📝 Lịch sử điểm danh & chuyên cần</h2>
+        <div id="attendance-container" style="overflow-x:auto;">
+          <p style="color: #64748b;">Đang tải lịch sử điểm danh...</p>
+        </div>
+      </div>
+
+      <!-- Exam Scores -->
+      <div class="section-card">
+        <h2>🏆 Bảng điểm & Kết quả kiểm tra</h2>
+        <div id="scores-container" style="overflow-x:auto;">
+          <p style="color: #64748b;">Đang tải bảng điểm...</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Toggle & Panel -->
+    <button class="ai-toggle" type="button" onclick="toggleStudentAi()" aria-label="Mở trợ lý AI">🤖</button>
+    <div class="ai-panel" id="student-ai-panel">
+      <h3>AI Học Viên</h3>
+      <p>Hỏi về lớp đang học, giáo viên phụ trách, lịch sử điểm danh hoặc điểm số.</p>
+      <textarea id="student-ai-input" placeholder="Ví dụ: Tôi đang học lớp nào?"></textarea>
+      <button class="btn btn-primary" style="margin-top:8px; width:100%; justify-content:center;" type="button" onclick="askStudentAi()">Hỏi AI</button>
+      <div class="answer" id="student-ai-answer" style="display:none;"></div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/ai-assistant.js"></script>
+    <script>
+      const session = getSession();
+      if (!session || session.role !== 'student') {
+        window.location.href = 'login.html';
+      }
+
+      if (session) {
+        document.getElementById('student-name-heading').textContent = `Xin chào ${session.name || 'Học viên'}`;
+        document.getElementById('student-badge').textContent = `Học viên: ${session.username || ''}`;
+      }
+
+      const studentAssistant = createRoleAssistant('student');
+
+      async function init() {
+        loadMyClasses();
+        loadMyAttendance();
+        loadMyScores();
+      }
+
+      async function loadMyClasses() {
+        const container = document.getElementById('classes-container');
+        try {
+          const { status, data } = await apiCall('/api/student/classes');
+          if (status === 200 && data.success && data.data.length > 0) {
+            container.innerHTML = data.data.map(c => `
+              <div class="student-class-card">
+                <span class="code-badge">${c.Code}</span>
+                <h3>${c.Name}</h3>
+                <p style="color:#64748b; font-size:0.9rem; margin:6px 0;"><strong>Giáo viên:</strong> ${c.TeacherName}</p>
+                <p style="color:#64748b; font-size:0.85rem; margin:0;">${c.Description || 'Khóa học tiếng Anh tiêu chuẩn'}</p>
+              </div>
+            `).join('');
+          } else {
+            container.innerHTML = '<p style="color:#64748b; grid-column:1/-1;">Bạn hiện chưa được phân vào lớp học nào.</p>';
+          }
+        } catch (e) {
+          container.innerHTML = '<p style="color:#dc2626;">Lỗi tải thông tin lớp học.</p>';
+        }
+      }
+
+      async function loadMyAttendance() {
+        const container = document.getElementById('attendance-container');
+        try {
+          const { status, data } = await apiCall('/api/student/attendance');
+          if (status === 200 && data.success && data.data.length > 0) {
+            container.innerHTML = `
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Lớp học</th>
+                    <th>Ngày học</th>
+                    <th>Trạng thái</th>
+                    <th>Ghi chú</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${data.data.map(a => `
+                    <tr>
+                      <td><strong>${a.ClassName}</strong> (${a.ClassCode || ''})</td>
+                      <td>${a.Date}</td>
+                      <td>
+                        <span class="badge ${a.Status === 'present' ? 'badge-success' : 'badge-danger'}">
+                          ${a.Status === 'present' ? '✓ Có mặt' : a.Status === 'late' ? 'Muộn' : 'Vắng mặt'}
+                        </span>
+                      </td>
+                      <td>${a.Note || 'Bình thường'}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            `;
+          } else {
+            container.innerHTML = '<p style="color:#64748b;">Chưa có dữ liệu điểm danh.</p>';
+          }
+        } catch (e) {
+          container.innerHTML = '<p style="color:#dc2626;">Lỗi tải dữ liệu điểm danh.</p>';
+        }
+      }
+
+      async function loadMyScores() {
+        const container = document.getElementById('scores-container');
+        try {
+          const { status, data } = await apiCall('/api/student/scores');
+          if (status === 200 && data.success && data.data.length > 0) {
+            container.innerHTML = `
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Bài thi / Kiểm tra</th>
+                    <th>Lớp học</th>
+                    <th>Điểm số</th>
+                    <th>Thang điểm</th>
+                    <th>Đánh giá</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${data.data.map(sc => `
+                    <tr>
+                      <td><strong>${sc.ExamName}</strong></td>
+                      <td>${sc.ClassName}</td>
+                      <td><strong style="color:#2563eb; font-size:1.1rem;">${sc.Score}</strong></td>
+                      <td>/${sc.MaxScore}</td>
+                      <td>${sc.Note || (sc.Score >= 80 ? 'Xuất sắc' : sc.Score >= 65 ? 'Đạt' : 'Cần cố gắng')}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            `;
+          } else {
+            container.innerHTML = '<p style="color:#64748b;">Chưa có điểm kiểm tra nào được ghi nhận.</p>';
+          }
+        } catch (e) {
+          container.innerHTML = '<p style="color:#dc2626;">Lỗi tải bảng điểm.</p>';
+        }
+      }
+
+      function toggleStudentAi() {
+        const panel = document.getElementById('student-ai-panel');
+        if (panel) panel.classList.toggle('open');
+      }
+
+      async function askStudentAi() {
+        const input = document.getElementById('student-ai-input');
+        const answer = document.getElementById('student-ai-answer');
+        if (!input || !answer) return;
+
+        const question = input.value.trim();
+        if (!question) {
+          alert('Vui lòng nhập câu hỏi cho AI');
+          return;
+        }
+
+        answer.style.display = 'block';
+        answer.textContent = '⏳ AI đang tra cứu dữ liệu cá nhân của bạn...';
+        answer.style.color = '#64748b';
+
+        try {
+          const result = await studentAssistant.askAI(question);
+          answer.textContent = result;
+          answer.style.color = result.includes('❌') ? '#dc2626' : '#1e3a8a';
+        } catch (error) {
+          answer.textContent = '❌ Lỗi kết nối AI: ' + error.message;
+          answer.style.color = '#dc2626';
+        }
+      }
+
+      function toggleHeaderNav() {
+        const nav = document.getElementById('header-nav');
+        const btn = document.querySelector('.hamburger-btn');
+        const isOpen = nav.classList.toggle('open');
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+      }
+
+      init();
+    </script>
+  </body>
+</html>
