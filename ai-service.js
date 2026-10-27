@@ -3,6 +3,7 @@
 // ============================================
 
 const sql = require('mssql');
+const { callGeminiAi, ROLE_PROMPTS, checkSecurityGuardrails } = require('./gemini-service');
 
 /**
  * Intent Types for all roles
@@ -198,7 +199,7 @@ function detectIntent(question, role = 'teacher') {
  * @param {any} db - Database connection pool or in-memory DB
  * @returns {Promise<object>} Result with answer and data
  */
-async function executeAiQuery(userId, role, question, intent, db) {
+async function executeAiQuery(userId, role, question, intent, db, user = {}) {
   console.log(`[AI] Request received`);
   console.log(`[AI] UserId: ${userId}`);
   console.log(`[AI] Role: ${role}`);
@@ -211,7 +212,7 @@ async function executeAiQuery(userId, role, question, intent, db) {
     if (intent === INTENTS.OUT_OF_SCOPE) {
       result = {
         success: true,
-        answer: 'Tôi có thể hỗ trợ các câu hỏi trong phạm vi quản lý trung tâm, lớp học, học viên và các chức năng mà tài khoản của bạn được phép sử dụng.',
+        answer: '💡 Tôi là Trợ lý AI chuyên biệt của Trung tâm Ngoại ngữ LinguaHub. Tôi chỉ hỗ trợ các câu hỏi liên quan đến quản lý trung tâm, lớp học, học viên, lịch học và kết quả học tập ngoại ngữ.',
         role,
         intent
       };
@@ -277,7 +278,7 @@ async function executeAiQuery(userId, role, question, intent, db) {
         default:
           result = {
             success: true,
-            answer: 'Tôi là AI Hỗ trợ học viên. Bạn có thể hỏi về các lớp đang học, giáo viên phụ trách, lịch sử điểm danh và điểm số của mình.',
+            answer: 'Tôi là LinguaHub Mentor AI. Bạn có thể hỏi về các lớp đang học, giáo viên phụ trách, lịch sử điểm danh, bảng điểm cá nhân cũng như các lời khuyên học tập ngoại ngữ.',
             role,
             intent
           };
@@ -343,8 +344,39 @@ async function executeAiQuery(userId, role, question, intent, db) {
 
     result.role = role;
     result.intent = intent;
-    console.log(`[AI] Database query executed`);
-    console.log(`[AI] Response generated`);
+    result.engine = 'rule-based';
+
+    // =========================================================================
+    // GENERATIVE AI INTEGRATION & RESILIENT FALLBACK ORCHESTRATION
+    // =========================================================================
+    try {
+      const userInfo = {
+        id: userId,
+        name: user.FullName || user.name || user.username || `User #${userId}`,
+        role: role
+      };
+
+      const geminiRes = await callGeminiAi(role, question, result, userInfo);
+
+      if (geminiRes && geminiRes.success && geminiRes.answer) {
+        // Lưu lại câu trả lời rule-based để đối chiếu kiểm thử (Audit / Prompt evaluation)
+        result.rawRuleBasedAnswer = result.answer;
+        result.answer = geminiRes.answer;
+        result.engine = geminiRes.engine; // 'gemini-ai' hoặc 'guardrail-shield'
+        result.model = geminiRes.model;
+        console.log(`[AI Engine] Thành công sinh câu trả lời bằng ${geminiRes.engine} (${geminiRes.model || 'N/A'})`);
+      } else if (geminiRes && geminiRes.error) {
+        // Fallback an toàn khi chưa cấu hình Key hoặc API lỗi
+        result.engine = 'rule-based-fallback';
+        result.fallbackReason = geminiRes.error;
+        console.log(`[AI Fallback] Chuyển đổi mượt sang Rule-Based Engine (Lý do: ${geminiRes.error})`);
+      }
+    } catch (llmErr) {
+      console.warn(`[AI Fallback Exception] ${llmErr.message} -> Sử dụng Rule-Based Engine.`);
+      result.engine = 'rule-based-fallback';
+      result.fallbackReason = llmErr.message;
+    }
+
     return result;
   } catch (error) {
     console.error('[AI] ERROR:', error);
@@ -1390,5 +1422,7 @@ async function studentMyInfo(userId, db) {
 module.exports = {
   INTENTS,
   detectIntent,
-  executeAiQuery
+  executeAiQuery,
+  ROLE_PROMPTS,
+  callGeminiAi
 };

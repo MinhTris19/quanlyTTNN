@@ -26,13 +26,16 @@ graph LR
 
 ---
 
-## 📑 BẢNG MỤC LỤC TÀI LIỆU DỰ ÁN
+## 📑 BẢNG MỤC LỤC HỒ SƠ ĐỒ ÁN MÔN HỌC (ACADEMIC DELIVERABLES)
 
-| Tài liệu | Đối tượng & Mục đích |
+| Tài liệu | Đối tượng & Mục đích (Chuẩn đầu ra môn học) |
 |---|---|
+| 📘 [**BAO_CAO_KY_THUAT.md**](docs/BAO_CAO_KY_THUAT.md) | **Báo cáo Kỹ thuật Đồ án hoàn chỉnh**: Đặt vấn đề, khảo sát nghiệp vụ, kiến trúc hệ thống, CSDL, kỹ thuật Prompt Engineering, thực nghiệm và kết luận (CLO1 - CLO5, PLO7). |
+| 🔬 [**PROMPT_EVALUATION.md**](docs/PROMPT_EVALUATION.md) | **Bảng thực nghiệm so sánh Prompt**: Đánh giá đối chứng Prompt v1 (Zero-shot), Prompt v2 (Role-only), Prompt v3 (RAG Grounding + Guardrails) qua 15 benchmark queries (CLO3, CLO5). |
+| 🧪 [**TEST_CASES.md**](docs/TEST_CASES.md) | **Kịch bản kiểm thử toàn diện**: 29 ca kiểm thử (Ca đúng, ca sai, ca giá trị biên, ca chịu lỗi và phục hồi hệ thống AI) (CLO3, CLO4, CLO5). |
+| 🧠 [**AI_SDLC_EVIDENCE.md**](docs/AI_SDLC_EVIDENCE.md) | **Minh chứng AI trong SDLC & Tư duy phản biện**: Nhật ký ứng dụng AI xuyên suốt 5 giai đoạn phát triển + Bảng kiểm chứng sửa lỗi sai do AI sinh ra (CLO1, CLO2, CLO5). |
 | 📖 [**USER_MANUAL.md**](USER_MANUAL.md) | **Hướng dẫn sử dụng chi tiết A-Z**: Thao tác từng bước trên giao diện cho 3 phân hệ (Admin, Giáo viên, Học viên) và cách trò chuyện với AI. |
 | 🗄️ [**README-SQL.md**](README-SQL.md) | **Hướng dẫn thiết lập SQL Server**: Các bước import file `.sql`, khai báo biến môi trường trong `.env` để kết nối với cơ sở dữ liệu thật. |
-| 🚀 [**README.md**](README.md) | File tổng quan dự án hiện tại. |
 
 ---
 

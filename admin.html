@@ -194,6 +194,7 @@
           <button class="nav-item" type="button" onclick="switchTab('students')"><span class="nav-icon">👥</span>Học viên</button>
           <button class="nav-item" type="button" onclick="switchTab('teachers')"><span class="nav-icon">👨‍🏫</span>Giảng viên</button>
           <button class="nav-item" type="button" onclick="switchTab('classes')"><span class="nav-icon">📚</span>Lớp học</button>
+          <button class="nav-item" type="button" onclick="switchTab('tuition')"><span class="nav-icon">💳</span>Học phí</button>
           <button class="nav-item" type="button" onclick="toggleAdminAi()"><span class="nav-icon">🤖</span>AI Quản trị</button>
           <button class="nav-item nav-logout" type="button" onclick="logout()"><span class="nav-icon">🚪</span>Đăng xuất</button>
         </nav>
@@ -336,6 +337,35 @@
             </thead>
             <tbody id="class-table-body">
               <tr><td colspan="7" style="text-align:center;">Đang tải dữ liệu...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ============================================
+           TAB 5: QUẢN LÝ HỌC PHÍ (F10)
+           ============================================ -->
+      <div id="tab-tuition" class="section-view">
+        <div class="section-header">
+          <h2>Quản lý Học phí & Tình trạng Thanh toán</h2>
+        </div>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Mã HP</th>
+                <th>Học Viên</th>
+                <th>Email</th>
+                <th>Khóa Học</th>
+                <th>Số Tiền</th>
+                <th>Hạn Nộp</th>
+                <th>Trạng Thái</th>
+                <th>Ngày Nộp</th>
+                <th>Thao Tác</th>
+              </tr>
+            </thead>
+            <tbody id="tuition-table-body">
+              <tr><td colspan="9" style="text-align:center;">Đang tải dữ liệu học phí...</td></tr>
             </tbody>
           </table>
         </div>
@@ -494,14 +524,23 @@
         const targetTab = document.getElementById(`tab-${tabKey}`);
         if (targetTab) targetTab.classList.add('active');
 
-        const navBtn = Array.from(document.querySelectorAll('.nav-item')).find(b => b.textContent.toLowerCase().includes(tabKey === 'overview' ? 'tổng quan' : tabKey === 'students' ? 'học viên' : tabKey === 'teachers' ? 'giảng viên' : 'lớp học'));
+        const navBtn = Array.from(document.querySelectorAll('.nav-item')).find(b => {
+          const t = b.textContent.toLowerCase();
+          if (tabKey === 'overview') return t.includes('tổng quan');
+          if (tabKey === 'students') return t.includes('học viên');
+          if (tabKey === 'teachers') return t.includes('giảng viên');
+          if (tabKey === 'classes') return t.includes('lớp học');
+          if (tabKey === 'tuition') return t.includes('học phí');
+          return false;
+        });
         if (navBtn) navBtn.classList.add('active');
 
         const headings = {
           overview: 'Bảng điều khiển Quản trị',
           students: 'Quản lý Học viên',
           teachers: 'Quản lý Giảng viên',
-          classes: 'Quản lý Lớp học'
+          classes: 'Quản lý Lớp học',
+          tuition: 'Quản lý Học phí & Thanh toán'
         };
         document.getElementById('page-heading').textContent = headings[tabKey] || 'Bảng điều khiển';
 
@@ -509,6 +548,7 @@
         if (tabKey === 'students') loadStudents();
         if (tabKey === 'teachers') loadTeachers();
         if (tabKey === 'classes') loadClasses();
+        if (tabKey === 'tuition') loadTuition();
       }
 
       // Alerts
@@ -648,6 +688,62 @@
           }
         } catch (err) {
           tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#dc2626;">Lỗi tải dữ liệu lớp học.</td></tr>';
+        }
+      }
+
+      // ============================================
+      // QUẢN LÝ HỌC PHÍ (F10)
+      // ============================================
+      async function loadTuition() {
+        const tbody = document.getElementById('tuition-table-body');
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;">Đang tải dữ liệu học phí...</td></tr>';
+        try {
+          const { status, data } = await apiCall('/api/admin/tuition');
+          if (status === 200 && data.success && data.data.length > 0) {
+            tbody.innerHTML = data.data.map(t => `
+              <tr>
+                <td><strong>HP${String(t.Id).padStart(3, '0')}</strong></td>
+                <td><strong>${t.StudentName}</strong></td>
+                <td>${t.StudentEmail}</td>
+                <td>${t.ClassName} (${t.ClassCode})</td>
+                <td><strong style="color:#0f172a;">${Number(t.Amount).toLocaleString('vi-VN')} đ</strong></td>
+                <td>${t.DueDate}</td>
+                <td>
+                  <span class="badge ${t.Status === 'paid' ? 'badge-success' : 'badge-danger'}">
+                    ${t.Status === 'paid' ? '✓ Đã đóng' : 'Chưa đóng'}
+                  </span>
+                </td>
+                <td>${t.PaidDate || '—'}</td>
+                <td>
+                  <button class="btn ${t.Status === 'paid' ? 'btn-secondary' : 'btn-primary'}" style="padding:4px 10px; font-size:0.75rem;" onclick="toggleTuitionStatus(${t.Id}, '${t.Status}')">
+                    ${t.Status === 'paid' ? 'Đổi sang Chưa nộp' : 'Xác nhận Đã nộp'}
+                  </button>
+                </td>
+              </tr>
+            `).join('');
+          } else {
+            tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#64748b;">Chưa có bản ghi học phí nào.</td></tr>';
+          }
+        } catch (err) {
+          tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; color:#dc2626;">Lỗi tải dữ liệu học phí.</td></tr>';
+        }
+      }
+
+      async function toggleTuitionStatus(id, currentStatus) {
+        const newStatus = currentStatus === 'paid' ? 'unpaid' : 'paid';
+        const confirmMsg = newStatus === 'paid' ? 'Xác nhận học viên đã thanh toán học phí?' : 'Đổi trạng thái về Chưa nộp?';
+        if (!confirm(confirmMsg)) return;
+
+        try {
+          const { status, data } = await apiCall(`/api/admin/tuition/${id}`, 'PUT', { status: newStatus });
+          if (status === 200 && data.success) {
+            showAlert(data.message);
+            loadTuition();
+          } else {
+            showAlert(data.message || 'Không thể cập nhật học phí', 'error');
+          }
+        } catch (e) {
+          showAlert('Lỗi kết nối khi cập nhật học phí', 'error');
         }
       }
 

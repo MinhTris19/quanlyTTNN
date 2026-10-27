@@ -78,7 +78,10 @@ function createRoleAssistant(role) {
         const data = await response.json();
 
         if (data.success && data.data && data.data.answer) {
-          return data.data.answer;
+          const badge = data.data.engine === 'gemini-ai'
+            ? '✨ [Google Gemini AI]\n'
+            : (data.data.engine === 'rule-based-fallback' ? '🛡️ [Smart Fallback Engine]\n' : '');
+          return badge ? `${badge}${data.data.answer}` : data.data.answer;
         } else if (data.answer) {
           return data.answer;
         } else {

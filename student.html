@@ -3,94 +3,42 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>LinguaHub | Trang Học Viên</title>
+    <title>LinguaHub | Cổng thông tin Học viên & Trợ lý AI</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="css/style.css" />
+    <link rel="stylesheet" href="styles.css" />
     <style>
-      body { background: #f1f5f9; margin: 0; font-family: 'Poppins', sans-serif; }
+      body { background: #f8fafc; font-family: 'Poppins', sans-serif; margin: 0; color: #1e293b; }
 
-      /* Header */
       .main-header {
-        position: sticky;
-        top: 0;
-        z-index: 900;
-        background: #2563eb;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        position: sticky; top: 0; z-index: 900; background: #2563eb; box-shadow: 0 2px 8px rgba(0,0,0,0.12);
       }
       .header-inner {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 24px;
-        display: flex;
-        align-items: stretch;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 0;
+        max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; align-items: stretch; justify-content: space-between; flex-wrap: wrap;
       }
-      .header-logo {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        color: #fff;
-        text-decoration: none;
-        font-weight: 700;
-      }
+      .header-logo { display: flex; align-items: center; gap: 10px; color: #fff; text-decoration: none; font-weight: 700; }
       .header-logo .logo-icon { font-size: 1.7rem; }
       .header-logo .logo-text { font-size: 1.15rem; }
-      .header-logo .logo-sub { display: block; font-size: 0.7rem; font-weight: 500; letter-spacing: 0.08em; color: rgba(255,255,255,0.75); text-transform: uppercase; }
-      .hamburger-btn {
-        display: none;
-        flex-direction: column;
-        gap: 5px;
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 6px;
-      }
+      .header-logo .logo-sub { display: block; font-size: 0.7rem; color: rgba(255,255,255,0.75); text-transform: uppercase; }
+
+      .hamburger-btn { display: none; flex-direction: column; gap: 5px; background: none; border: none; cursor: pointer; padding: 6px; }
       .hamburger-btn span { width: 26px; height: 3px; background: #fff; border-radius: 2px; display: block; }
-      .header-nav {
-        display: flex;
-        align-items: stretch;
-        gap: 0;
-      }
+      .header-nav { display: flex; align-items: stretch; gap: 0; }
       .nav-item {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 14px 16px;
-        border-radius: 0;
-        color: rgba(255,255,255,0.85);
-        text-decoration: none;
-        font-weight: 600;
-        font-size: 0.82rem;
-        text-transform: uppercase;
-        letter-spacing: 0.02em;
-        background: transparent;
-        border: none;
-        border-bottom: 3px solid transparent;
-        cursor: pointer;
-        transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-        font-family: inherit;
+        display: inline-flex; align-items: center; gap: 6px; padding: 14px 16px; border-radius: 0;
+        color: rgba(255,255,255,0.85); text-decoration: none; font-weight: 600; font-size: 0.82rem; text-transform: uppercase;
+        background: transparent; border: none; border-bottom: 3px solid transparent; cursor: pointer; font-family: inherit;
+        transition: all 0.2s ease;
       }
       .nav-item:hover { background: rgba(255,255,255,0.1); color: #fff; }
-      .nav-item.active { color: #fff; border-bottom-color: #fff; background: rgba(255,255,255,0.12); }
+      .nav-item.active { color: #fff; border-bottom-color: #fff; background: rgba(255,255,255,0.15); }
       .nav-item.nav-logout { color: rgba(255,255,255,0.7); }
       .nav-item.nav-logout:hover { background: rgba(220,38,38,0.4); }
 
       @media (max-width: 860px) {
         .hamburger-btn { display: flex; }
-        .header-nav {
-          display: none;
-          width: 100%;
-          flex-direction: column;
-          align-items: stretch;
-          background: #1e3a8a;
-          border-radius: 12px;
-          padding: 8px;
-          margin-top: 4px;
-        }
+        .header-nav { display: none; width: 100%; flex-direction: column; background: #1e3a8a; border-radius: 12px; padding: 8px; margin-top: 4px; }
         .header-nav.open { display: flex; }
         .nav-item { width: 100%; justify-content: flex-start; }
       }
@@ -100,11 +48,15 @@
       .topbar h1 { color: #0f172a; font-size: 1.8rem; margin: 0; font-weight: 700; }
       .eyebrow { color: #64748b; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; margin: 0 0 4px; }
 
-      .section-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 24px; }
-      .section-card h2 { margin: 0 0 16px; font-size: 1.3rem; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+      .section-view { display: none; }
+      .section-view.active { display: block; animation: fadeIn 0.3s ease; }
+      @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-      .grid-classes { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
-      .student-class-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); }
+      .section-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+      .section-card h2 { margin: 0 0 16px; font-size: 1.25rem; color: #0f172a; display: flex; align-items: center; gap: 8px; }
+
+      .grid-classes { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 16px; }
+      .student-class-card { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.03); display: flex; flex-direction: column; justify-content: space-between; }
       .student-class-card h3 { margin: 0 0 6px; color: #0f172a; font-size: 1.15rem; }
       .code-badge { display: inline-block; background: #eff6ff; color: #2563eb; padding: 3px 8px; border-radius: 6px; font-size: 0.8rem; font-weight: 700; margin-bottom: 10px; }
 
@@ -114,18 +66,33 @@
       .badge { display: inline-block; padding: 4px 10px; border-radius: 999px; font-size: 0.75rem; font-weight: 600; }
       .badge-success { background: #dcfce7; color: #166534; }
       .badge-danger { background: #fee2e2; color: #991b1b; }
+      .badge-warning { background: #fef3c7; color: #92400e; }
 
-      /* AI Floating Button & Panel */
+      .btn { padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; font-family: inherit; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+      .btn-primary { background: #2563eb; color: white; }
+      .btn-primary:hover { background: #1d4ed8; }
+      .btn-success { background: #16a34a; color: white; }
+      .btn-success:hover { background: #15803d; }
+      .btn-amber { background: #d97706; color: white; }
+      .btn-amber:hover { background: #b45309; }
+
+      /* AI Assistant Tabs & Widget */
       .ai-toggle { position: fixed; right: 24px; bottom: 24px; width: 60px; height: 60px; border-radius: 50%; border: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: white; font-size: 28px; cursor: pointer; box-shadow: 0 10px 25px rgba(245, 158, 11, 0.4); z-index: 950; display: flex; align-items: center; justify-content: center; }
-      .ai-panel { position: fixed; right: 24px; bottom: 94px; width: min(92vw, 380px); background: white; border: 1px solid #cbd5e1; border-radius: 20px; box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2); padding: 18px; display: none; z-index: 950; }
+      .ai-panel { position: fixed; right: 24px; bottom: 94px; width: min(92vw, 400px); background: white; border: 1px solid #cbd5e1; border-radius: 20px; box-shadow: 0 20px 45px rgba(15, 23, 42, 0.2); padding: 18px; display: none; z-index: 950; }
       .ai-panel.open { display: block; }
       .ai-panel h3 { margin: 0 0 4px; color: #0f172a; font-size: 1.1rem; }
       .ai-panel p { margin: 0 0 12px; color: #64748b; font-size: 0.8rem; }
       .ai-panel textarea { width: 100%; min-height: 80px; border: 1px solid #cbd5e1; border-radius: 10px; padding: 10px; font-family: inherit; font-size: 0.85rem; box-sizing: border-box; resize: vertical; }
-      .ai-panel .answer { margin-top: 12px; padding: 12px; background: #f8fafc; border-radius: 10px; color: #1e3a8a; font-size: 0.85rem; line-height: 1.5; border: 1px solid #e2e8f0; max-height: 200px; overflow-y: auto; white-space: pre-line; }
+      .ai-panel .answer { margin-top: 12px; padding: 12px; background: #f8fafc; border-radius: 10px; color: #1e3a8a; font-size: 0.85rem; line-height: 1.5; border: 1px solid #e2e8f0; max-height: 220px; overflow-y: auto; white-space: pre-line; }
 
-      .btn { padding: 9px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; font-family: inherit; }
-      .btn-primary { background: #2563eb; color: white; }
+      /* AI Feature Subtabs */
+      .ai-feature-box { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+      .form-group { margin-bottom: 14px; }
+      .form-group label { display: block; font-size: 0.85rem; font-weight: 600; color: #334155; margin-bottom: 6px; }
+      .form-control { width: 100%; padding: 10px 14px; border: 1px solid #cbd5e1; border-radius: 8px; font-family: inherit; font-size: 0.9rem; box-sizing: border-box; }
+      .quiz-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 16px; margin-bottom: 12px; }
+      .quiz-option { display: block; margin: 8px 0; padding: 8px 12px; background: white; border: 1px solid #cbd5e1; border-radius: 8px; cursor: pointer; font-size: 0.88rem; }
+      .quiz-option:hover { background: #eff6ff; border-color: #3b82f6; }
     </style>
   </head>
   <body>
@@ -142,8 +109,10 @@
           <span></span><span></span><span></span>
         </button>
         <nav class="header-nav" id="header-nav">
-          <a class="nav-item active" href="student.html"><span class="nav-icon">🏠</span>Tổng quan</a>
-          <button class="nav-item" type="button" onclick="toggleStudentAi()"><span class="nav-icon">🤖</span>AI Học viên</button>
+          <button class="nav-item active" type="button" onclick="switchStudentTab('overview')"><span class="nav-icon">🏠</span>Tổng quan</button>
+          <button class="nav-item" type="button" onclick="switchStudentTab('enroll')"><span class="nav-icon">📝</span>Đăng ký học</button>
+          <button class="nav-item" type="button" onclick="switchStudentTab('tuition')"><span class="nav-icon">💳</span>Học phí</button>
+          <button class="nav-item" type="button" onclick="switchStudentTab('ai-hub')"><span class="nav-icon">✨</span>AI Học tập</button>
           <button class="nav-item nav-logout" type="button" onclick="logout()"><span class="nav-icon">🚪</span>Đăng xuất</button>
         </nav>
       </div>
@@ -160,38 +129,136 @@
         </div>
       </div>
 
-      <!-- Enrolled Classes -->
-      <div class="section-card">
-        <h2>📚 Lớp học đang tham gia</h2>
-        <div id="classes-container" class="grid-classes">
-          <p style="color: #64748b;">Đang tải danh sách lớp...</p>
+      <!-- TAB 1: TỔNG QUAN -->
+      <div id="tab-overview" class="section-view active">
+        <!-- Enrolled Classes -->
+        <div class="section-card">
+          <h2>📚 Lớp học đang tham gia</h2>
+          <div id="classes-container" class="grid-classes">
+            <p style="color: #64748b;">Đang tải danh sách lớp...</p>
+          </div>
+        </div>
+
+        <!-- Attendance History -->
+        <div class="section-card">
+          <h2>📝 Lịch sử điểm danh & chuyên cần</h2>
+          <div id="attendance-container" style="overflow-x:auto;">
+            <p style="color: #64748b;">Đang tải lịch sử điểm danh...</p>
+          </div>
+        </div>
+
+        <!-- Exam Scores -->
+        <div class="section-card">
+          <h2>🏆 Bảng điểm & Kết quả kiểm tra</h2>
+          <div id="scores-container" style="overflow-x:auto;">
+            <p style="color: #64748b;">Đang tải bảng điểm...</p>
+          </div>
         </div>
       </div>
 
-      <!-- Attendance History -->
-      <div class="section-card">
-        <h2>📝 Lịch sử điểm danh & chuyên cần</h2>
-        <div id="attendance-container" style="overflow-x:auto;">
-          <p style="color: #64748b;">Đang tải lịch sử điểm danh...</p>
+      <!-- TAB 2: F09 ĐĂNG KÝ HỌC (STUDENT ENROLLMENT) -->
+      <div id="tab-enroll" class="section-view">
+        <div class="section-card">
+          <h2>📝 Danh sách Khóa học đang tuyển sinh</h2>
+          <p style="color:#64748b; margin-top:-8px; margin-bottom:16px;">Lựa chọn khóa học phù hợp với mục tiêu và thời gian rảnh của bạn.</p>
+          <div id="available-classes-container" class="grid-classes">
+            <p style="color: #64748b;">Đang tải danh mục khóa học mở...</p>
+          </div>
         </div>
       </div>
 
-      <!-- Exam Scores -->
-      <div class="section-card">
-        <h2>🏆 Bảng điểm & Kết quả kiểm tra</h2>
-        <div id="scores-container" style="overflow-x:auto;">
-          <p style="color: #64748b;">Đang tải bảng điểm...</p>
+      <!-- TAB 3: F11 HỌC PHÍ CỦA TÔI (TUITION) -->
+      <div id="tab-tuition" class="section-view">
+        <div class="section-card">
+          <h2>💳 Tra cứu Học phí & Lịch sử thanh toán</h2>
+          <p style="color:#64748b; margin-top:-8px; margin-bottom:16px;">Theo dõi tình trạng nộp học phí của các khóa học bạn đã đăng ký.</p>
+          <div id="student-tuition-container" style="overflow-x:auto;">
+            <p style="color: #64748b;">Đang tải dữ liệu học phí...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: F18 AI HỌC TẬP CHUYÊN SÂU (3 CHỨC NĂNG AI) -->
+      <div id="tab-ai-hub" class="section-view">
+        <!-- Chức năng 1: AI Tư vấn lớp học -->
+        <div class="ai-feature-box">
+          <h2 style="margin:0 0 8px; color:#1e40af; font-size:1.2rem;">🎯 1. AI Tư vấn Lớp học Phù hợp (Course Recommendation)</h2>
+          <p style="color:#64748b; font-size:0.85rem; margin-bottom:14px;">AI sẽ đối chiếu trình độ và lịch rảnh của bạn với các lớp học đang mở để đưa ra gợi ý tối ưu.</p>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+            <div class="form-group">
+              <label>Trình độ hiện tại:</label>
+              <select id="rec-level" class="form-control">
+                <option value="A2 (Mất gốc)">A2 (Mất gốc / Cơ bản)</option>
+                <option value="B1 (Trung cấp)" selected>B1 (Trung cấp)</option>
+                <option value="B2 (Khá giỏi)">B2 (Khá giỏi)</option>
+                <option value="Luyện thi TOEIC 500+">Luyện thi TOEIC 500+</option>
+                <option value="Luyện thi IELTS 6.5+">Luyện thi IELTS 6.5+</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Lịch rảnh trong tuần:</label>
+              <input type="text" id="rec-time" class="form-control" value="Tối Thứ 2, 4, 6 (18:00 - 20:00)" placeholder="VD: Tối Thứ 2, 4, 6" />
+            </div>
+            <div class="form-group">
+              <label>Mục tiêu khóa học:</label>
+              <input type="text" id="rec-goal" class="form-control" value="Luyện thi chứng chỉ TOEIC ra trường" placeholder="VD: Giao tiếp, TOEIC, IELTS" />
+            </div>
+          </div>
+          <button class="btn btn-primary" type="button" onclick="submitRecommendAi()">✨ Yêu cầu AI Tư Vấn</button>
+          <div id="rec-result" style="margin-top:16px; display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px;"></div>
+        </div>
+
+        <!-- Chức năng 2: AI Sinh bài tập trắc nghiệm -->
+        <div class="ai-feature-box">
+          <h2 style="margin:0 0 8px; color:#16a34a; font-size:1.2rem;">📝 2. AI Sinh Bài Luyện Tập Trắc Nghiệm (Quiz Generator)</h2>
+          <p style="color:#64748b; font-size:0.85rem; margin-bottom:14px;">Thực hành ngay với các câu hỏi tiếng Anh do AI sinh trực tiếp, có giải thích đáp án chi tiết.</p>
+          <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px;">
+            <div class="form-group">
+              <label>Trình độ:</label>
+              <select id="quiz-level" class="form-control">
+                <option value="A2">Cơ bản (A2)</option>
+                <option value="B1" selected>Trung cấp (B1)</option>
+                <option value="TOEIC 600">Luyện thi TOEIC</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Chủ đề luyện tập:</label>
+              <select id="quiz-topic" class="form-control">
+                <option value="Từ vựng công sở & Phỏng vấn">Từ vựng công sở & Phỏng vấn</option>
+                <option value="Ngữ pháp Thì hoàn thành">Ngữ pháp Thì hoàn thành</option>
+                <option value="Tiếng Anh Giao tiếp Du lịch">Tiếng Anh Giao tiếp Du lịch</option>
+                <option value="Giới từ & Cụm động từ">Giới từ & Cụm động từ</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Số lượng câu:</label>
+              <select id="quiz-number" class="form-control">
+                <option value="3">3 câu (Luyện nhanh)</option>
+                <option value="5" selected>5 câu (Tiêu chuẩn)</option>
+              </select>
+            </div>
+          </div>
+          <button class="btn btn-success" type="button" onclick="submitGenerateQuizAi()">⚡ AI Tạo Bài Tập Ngay</button>
+          <div id="quiz-container" style="margin-top:16px; display:none;"></div>
+        </div>
+
+        <!-- Chức năng 3: AI Tóm tắt tiến độ học tập -->
+        <div class="ai-feature-box">
+          <h2 style="margin:0 0 8px; color:#d97706; font-size:1.2rem;">📊 3. AI Tóm Tắt Tiến Độ Học Tập (Progress Summary)</h2>
+          <p style="color:#64748b; font-size:0.85rem; margin-bottom:14px;">AI tự động tổng hợp kết quả điểm thi và chuyên cần của bạn để đưa ra bản phân tích 4 phần chuyên sâu.</p>
+          <button class="btn btn-amber" type="button" onclick="submitSummarizeAi()">📑 Yêu cầu AI Phân Tích Tiến Độ</button>
+          <div id="summary-result" style="margin-top:16px; display:none; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:18px; line-height:1.6; font-size:0.9rem; color:#1e3a8a; white-space:pre-line;"></div>
         </div>
       </div>
     </div>
 
-    <!-- AI Toggle & Panel -->
+    <!-- AI Floating Chatbot Widget -->
     <button class="ai-toggle" type="button" onclick="toggleStudentAi()" aria-label="Mở trợ lý AI">🤖</button>
     <div class="ai-panel" id="student-ai-panel">
-      <h3>AI Học Viên</h3>
-      <p>Hỏi về lớp đang học, giáo viên phụ trách, lịch sử điểm danh hoặc điểm số.</p>
-      <textarea id="student-ai-input" placeholder="Ví dụ: Tôi đang học lớp nào?"></textarea>
-      <button class="btn btn-primary" style="margin-top:8px; width:100%; justify-content:center;" type="button" onclick="askStudentAi()">Hỏi AI</button>
+      <h3>AI Học Viên LinguaHub</h3>
+      <p>Trò chuyện và hỏi đáp nhanh về thông tin học tập, chuyên cần, điểm số của bạn.</p>
+      <textarea id="student-ai-input" placeholder="Ví dụ: Tôi đang học lớp nào? Điểm thi của tôi ra sao?"></textarea>
+      <button class="btn btn-primary" style="margin-top:8px; width:100%; justify-content:center;" type="button" onclick="askStudentAi()">Gửi câu hỏi</button>
       <div class="answer" id="student-ai-answer" style="display:none;"></div>
     </div>
 
@@ -210,12 +277,36 @@
 
       const studentAssistant = createRoleAssistant('student');
 
+      function switchStudentTab(tabId) {
+        document.querySelectorAll('.section-view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+
+        const target = document.getElementById(`tab-${tabId}`);
+        if (target) target.classList.add('active');
+
+        const navBtn = Array.from(document.querySelectorAll('.nav-item')).find(b => {
+          const t = b.textContent.toLowerCase();
+          if (tabId === 'overview') return t.includes('tổng quan');
+          if (tabId === 'enroll') return t.includes('đăng ký');
+          if (tabId === 'tuition') return t.includes('học phí');
+          if (tabId === 'ai-hub') return t.includes('ai');
+          return false;
+        });
+        if (navBtn) navBtn.classList.add('active');
+
+        if (tabId === 'enroll') loadAvailableClasses();
+        if (tabId === 'tuition') loadStudentTuition();
+      }
+
       async function init() {
         loadMyClasses();
         loadMyAttendance();
         loadMyScores();
       }
 
+      // ============================================
+      // 1. TỔNG QUAN HỌC TẬP
+      // ============================================
       async function loadMyClasses() {
         const container = document.getElementById('classes-container');
         try {
@@ -223,14 +314,16 @@
           if (status === 200 && data.success && data.data.length > 0) {
             container.innerHTML = data.data.map(c => `
               <div class="student-class-card">
-                <span class="code-badge">${c.Code}</span>
-                <h3>${c.Name}</h3>
-                <p style="color:#64748b; font-size:0.9rem; margin:6px 0;"><strong>Giáo viên:</strong> ${c.TeacherName}</p>
-                <p style="color:#64748b; font-size:0.85rem; margin:0;">${c.Description || 'Khóa học tiếng Anh tiêu chuẩn'}</p>
+                <div>
+                  <span class="code-badge">${c.Code}</span>
+                  <h3>${c.Name}</h3>
+                  <p style="color:#64748b; font-size:0.9rem; margin:6px 0;"><strong>Giáo viên:</strong> ${c.TeacherName}</p>
+                  <p style="color:#64748b; font-size:0.85rem; margin:0;">${c.Description || 'Khóa học tiếng Anh tiêu chuẩn'}</p>
+                </div>
               </div>
             `).join('');
           } else {
-            container.innerHTML = '<p style="color:#64748b; grid-column:1/-1;">Bạn hiện chưa được phân vào lớp học nào.</p>';
+            container.innerHTML = '<p style="color:#64748b; grid-column:1/-1;">Bạn hiện chưa tham gia lớp học nào. Hãy sang tab <strong>Đăng ký học</strong> để chọn lớp!</p>';
           }
         } catch (e) {
           container.innerHTML = '<p style="color:#dc2626;">Lỗi tải thông tin lớp học.</p>';
@@ -258,7 +351,7 @@
                       <td><strong>${a.ClassName}</strong> (${a.ClassCode || ''})</td>
                       <td>${a.Date}</td>
                       <td>
-                        <span class="badge ${a.Status === 'present' ? 'badge-success' : 'badge-danger'}">
+                        <span class="badge ${a.Status === 'present' ? 'badge-success' : a.Status === 'late' ? 'badge-warning' : 'badge-danger'}">
                           ${a.Status === 'present' ? '✓ Có mặt' : a.Status === 'late' ? 'Muộn' : 'Vắng mặt'}
                         </span>
                       </td>
@@ -313,6 +406,275 @@
         }
       }
 
+      // ============================================
+      // 2. F09: ĐĂNG KÝ HỌC (STUDENT ENROLLMENT)
+      // ============================================
+      async function loadAvailableClasses() {
+        const container = document.getElementById('available-classes-container');
+        container.innerHTML = '<p style="color:#64748b;">Đang tải danh sách lớp học mở...</p>';
+        try {
+          const { status, data } = await apiCall('/api/student/available-classes');
+          if (status === 200 && data.success && data.data.length > 0) {
+            container.innerHTML = data.data.map(cls => `
+              <div class="student-class-card">
+                <div>
+                  <span class="code-badge">${cls.Code}</span>
+                  <h3>${cls.Name}</h3>
+                  <p style="color:#64748b; font-size:0.88rem; margin:4px 0;"><strong>Giáo viên:</strong> ${cls.TeacherName}</p>
+                  <p style="color:#64748b; font-size:0.88rem; margin:4px 0;"><strong>Lịch học:</strong> ${cls.Schedule}</p>
+                  <p style="color:#64748b; font-size:0.88rem; margin:4px 0;"><strong>Phòng:</strong> ${cls.Room}</p>
+                  <p style="color:#0f172a; font-size:0.95rem; font-weight:700; margin:8px 0;">Học phí: ${Number(cls.Fee).toLocaleString('vi-VN')} đ</p>
+                  <p style="font-size:0.8rem; color:#64748b; margin-bottom:12px;">Sĩ số: ${cls.EnrolledCount}/${cls.MaxStudents} học viên</p>
+                </div>
+                <div>
+                  ${cls.IsEnrolled 
+                    ? '<button class="btn" style="background:#e2e8f0; color:#64748b; width:100%; cursor:not-allowed;" disabled>✓ Đã đăng ký</button>'
+                    : cls.IsFull
+                      ? '<button class="btn" style="background:#fee2e2; color:#b91c1c; width:100%; cursor:not-allowed;" disabled>Lớp đã đầy</button>'
+                      : `<button class="btn btn-primary" style="width:100%;" onclick="enrollClass(${cls.Id}, '${cls.Name}')">Đăng Ký Khóa Học</button>`
+                  }
+                </div>
+              </div>
+            `).join('');
+          } else {
+            container.innerHTML = '<p style="color:#64748b;">Hiện không có lớp học mới nào đang mở tuyển sinh.</p>';
+          }
+        } catch (e) {
+          container.innerHTML = '<p style="color:#dc2626;">Lỗi tải danh mục lớp mở.</p>';
+        }
+      }
+
+      async function enrollClass(classId, className) {
+        if (!confirm(`Bạn có chắc chắn muốn đăng ký tham gia lớp "${className}" không?`)) return;
+        try {
+          const { status, data } = await apiCall('/api/student/enroll', 'POST', { classId });
+          if (status === 200 && data.success) {
+            alert(data.message);
+            loadAvailableClasses();
+            loadMyClasses();
+            loadStudentTuition();
+          } else {
+            alert(data.message || 'Đăng ký không thành công.');
+          }
+        } catch (e) {
+          alert('Lỗi kết nối khi đăng ký: ' + e.message);
+        }
+      }
+
+      // ============================================
+      // 3. F11: HỌC PHÍ CỦA TÔI
+      // ============================================
+      async function loadStudentTuition() {
+        const container = document.getElementById('student-tuition-container');
+        container.innerHTML = '<p style="color:#64748b;">Đang tải thông tin học phí...</p>';
+        try {
+          const { status, data } = await apiCall('/api/student/tuition');
+          if (status === 200 && data.success && data.data.length > 0) {
+            container.innerHTML = `
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Khóa học</th>
+                    <th>Số tiền học phí</th>
+                    <th>Hạn nộp</th>
+                    <th>Trạng thái</th>
+                    <th>Ngày nộp</th>
+                    <th>Ghi chú</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${data.data.map(t => `
+                    <tr>
+                      <td><strong>${t.ClassName}</strong> (${t.ClassCode})</td>
+                      <td><strong style="color:#0f172a;">${Number(t.Amount).toLocaleString('vi-VN')} đ</strong></td>
+                      <td>${t.DueDate}</td>
+                      <td>
+                        <span class="badge ${t.Status === 'paid' ? 'badge-success' : 'badge-danger'}">
+                          ${t.Status === 'paid' ? '✓ Đã thanh toán' : 'Chưa nộp'}
+                        </span>
+                      </td>
+                      <td>${t.PaidDate || '—'}</td>
+                      <td>${t.Note || ''}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            `;
+          } else {
+            container.innerHTML = '<p style="color:#64748b;">Bạn hiện không có khoản học phí nào cần thanh toán.</p>';
+          }
+        } catch (e) {
+          container.innerHTML = '<p style="color:#dc2626;">Lỗi tải dữ liệu học phí.</p>';
+        }
+      }
+
+      // ============================================
+      // 4. F18: 3 CHỨC NĂNG AI CHUYÊN SÂU
+      // ============================================
+      async function submitRecommendAi() {
+        const level = document.getElementById('rec-level').value;
+        const availability = document.getElementById('rec-time').value;
+        const goal = document.getElementById('rec-goal').value;
+        const resBox = document.getElementById('rec-result');
+
+        resBox.style.display = 'block';
+        resBox.innerHTML = '<p style="color:#2563eb; margin:0;">⏳ AI đang phân tích dữ liệu lớp học mở để tìm lớp tối ưu cho bạn...</p>';
+
+        try {
+          const { status, data } = await apiCall('/api/ai/recommend-class', 'POST', { level, availability, goal });
+          if (status === 200 && data.success) {
+            const badge = data.engine === 'gemini-ai' ? '✨ [Google Gemini AI]' : '🛡️ [Smart Fallback Engine]';
+            let html = `<div style="font-size:0.8rem; font-weight:700; color:#d97706; margin-bottom:10px;">${badge}</div>`;
+            html += `<p style="margin:0 0 12px; color:#1e293b; font-weight:600;">${data.advice || 'Đề xuất từ AI:'}</p>`;
+            if (data.recommendations && data.recommendations.length > 0) {
+              html += `<div style="display:grid; gap:12px;">`;
+              data.recommendations.forEach(r => {
+                const classId = r.classId || r.Id || r.id;
+                const className = r.className || r.Name || r.name;
+                const fee = Number(r.fee || r.Fee || 3500000);
+                const schedule = r.schedule || r.Schedule || 'Thứ 2, 4, 6';
+                html += `
+                  <div style="background:white; border:1px solid #cbd5e1; border-radius:8px; padding:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                    <div style="flex:1; min-width:240px;">
+                      <h4 style="margin:0 0 4px; color:#1e40af; font-size:1.05rem;">${className}</h4>
+                      <p style="margin:0 0 4px; font-size:0.85rem; color:#64748b;"><strong>Lịch học:</strong> ${schedule} | <strong>Học phí:</strong> ${fee.toLocaleString('vi-VN')} đ</p>
+                      <p style="margin:0; font-size:0.85rem; color:#0f172a;">💡 ${r.reason}</p>
+                    </div>
+                    <div>
+                      <button class="btn btn-primary" type="button" onclick="enrollClass(${classId}, '${className}')">👉 Đăng Ký Lớp Này</button>
+                    </div>
+                  </div>
+                `;
+              });
+              html += `</div>`;
+            } else {
+              html += `<p style="color:#64748b; font-size:0.85rem;">Không tìm thấy lớp học nào hoàn toàn khớp với lịch rảnh của bạn.</p>`;
+            }
+            resBox.innerHTML = html;
+          } else {
+            resBox.innerHTML = '<p style="color:#dc2626;">Không thể nhận tư vấn từ AI vào lúc này.</p>';
+          }
+        } catch (e) {
+          resBox.innerHTML = `<p style="color:#dc2626;">Lỗi kết nối AI: ${e.message}</p>`;
+        }
+      }
+
+      let currentQuizQuestions = [];
+      async function submitGenerateQuizAi() {
+        const level = document.getElementById('quiz-level').value;
+        const topic = document.getElementById('quiz-topic').value;
+        const number = document.getElementById('quiz-number').value;
+        const container = document.getElementById('quiz-container');
+
+        container.style.display = 'block';
+        container.innerHTML = '<p style="color:#16a34a; margin:0;">⏳ AI đang soạn đề bài trắc nghiệm chất lượng cao cho bạn...</p>';
+
+        try {
+          const { status, data } = await apiCall('/api/ai/generate-practice', 'POST', { level, topic, number });
+          if (status === 200 && data.success && data.questions) {
+            currentQuizQuestions = data.questions;
+            const badge = data.engine === 'gemini-ai' ? '✨ [Google Gemini AI]' : '🛡️ [Smart Fallback Bank]';
+            let html = `<div style="font-size:0.8rem; font-weight:700; color:#16a34a; margin-bottom:12px;">${badge} — Đề bài: ${data.topic} (Trình độ: ${data.level})</div>`;
+            
+            data.questions.forEach((q, idx) => {
+              html += `
+                <div class="quiz-card" id="quiz-card-${idx}">
+                  <p style="margin:0 0 8px; font-weight:600; color:#0f172a;">Câu ${idx + 1}: ${q.question}</p>
+                  <div>
+                    ${q.options.map(opt => `
+                      <label class="quiz-option">
+                        <input type="radio" name="question_${idx}" value="${opt.charAt(0)}" /> ${opt}
+                      </label>
+                    `).join('')}
+                  </div>
+                  <div class="quiz-feedback" id="feedback-${idx}" style="display:none; margin-top:8px; padding:8px; border-radius:6px; font-size:0.85rem;"></div>
+                </div>
+              `;
+            });
+
+            html += `<button class="btn btn-success" style="width:100%; margin-top:10px;" type="button" onclick="gradeCurrentQuiz()">🎯 Nộp Bài & Chấm Điểm AI</button>`;
+            container.innerHTML = html;
+          } else {
+            container.innerHTML = '<p style="color:#dc2626;">Không thể tạo bài tập vào lúc này.</p>';
+          }
+        } catch (e) {
+          container.innerHTML = `<p style="color:#dc2626;">Lỗi tạo bài tập AI: ${e.message}</p>`;
+        }
+      }
+
+      function gradeCurrentQuiz() {
+        if (!currentQuizQuestions || currentQuizQuestions.length === 0) return;
+        let correctCount = 0;
+        let unansweredCount = 0;
+
+        currentQuizQuestions.forEach((q, idx) => {
+          const selected = document.querySelector(`input[name="question_${idx}"]:checked`);
+          const fb = document.getElementById(`feedback-${idx}`);
+          fb.style.display = 'block';
+
+          const correctLetter = (q.answer || '').trim().charAt(0).toUpperCase();
+          const userLetter = selected ? selected.value.toUpperCase() : '';
+
+          if (!selected) {
+            unansweredCount++;
+            fb.style.background = '#fef3c7';
+            fb.style.color = '#92400e';
+            fb.innerHTML = `<strong>⚠️ Bạn chưa chọn đáp án!</strong> Đáp án đúng là <strong>${correctLetter}</strong>. ${q.explanation || ''}`;
+          } else if (userLetter === correctLetter) {
+            correctCount++;
+            fb.style.background = '#dcfce7';
+            fb.style.color = '#166534';
+            fb.innerHTML = `<strong>✓ Chính xác!</strong> Đáp án <strong>${correctLetter}</strong>. ${q.explanation || ''}`;
+          } else {
+            fb.style.background = '#fee2e2';
+            fb.style.color = '#991b1b';
+            fb.innerHTML = `<strong>✗ Chưa đúng!</strong> (Bạn chọn ${userLetter}) — Đáp án đúng là <strong>${correctLetter}</strong>. ${q.explanation || ''}`;
+          }
+        });
+
+        const percent = Math.round((correctCount / currentQuizQuestions.length) * 100);
+        let msg = `🎉 Kết quả bài tập: ${correctCount}/${currentQuizQuestions.length} câu đúng (${percent}%)!`;
+        if (unansweredCount > 0) {
+          msg += ` (Có ${unansweredCount} câu chưa chọn)`;
+        }
+        alert(msg);
+      }
+
+      function formatMarkdownToHtml(text) {
+        if (!text) return '';
+        return text
+          .replace(/^### (.*$)/gim, '<h3 style="color:#1e3a8a; margin:16px 0 8px; font-size:1.1rem;">$1</h3>')
+          .replace(/^## (.*$)/gim, '<h2 style="color:#1e3a8a; margin:18px 0 8px; font-size:1.2rem;">$1</h2>')
+          .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+          .replace(/^\s*-\s+(.*$)/gim, '<li style="margin-left:20px; margin-bottom:4px;">$1</li>')
+          .replace(/\n{2,}/g, '<br/><br/>')
+          .replace(/\n/g, '<br/>');
+      }
+
+      async function submitSummarizeAi() {
+        const box = document.getElementById('summary-result');
+        box.style.display = 'block';
+        box.innerHTML = '<p style="color:#64748b; margin:0;">⏳ AI đang đọc dữ liệu điểm thi và lịch sử điểm danh của bạn để lập báo cáo tiến độ...</p>';
+
+        try {
+          const { status, data } = await apiCall('/api/ai/summarize-progress', 'POST', {});
+          if (status === 200 && data.success) {
+            const badge = data.engine === 'gemini-ai'
+              ? '<div style="font-weight:700; color:#16a34a; margin-bottom:12px;">✨ [Google Gemini AI Phân tích Tiến độ Cá nhân]</div>'
+              : '<div style="font-weight:700; color:#d97706; margin-bottom:12px;">🛡️ [Smart Fallback Engine Phân tích Tiến độ Cá nhân]</div>';
+            box.innerHTML = badge + '<div style="line-height:1.7;">' + formatMarkdownToHtml(data.summary) + '</div>';
+            box.style.color = '#1e293b';
+          } else {
+            box.innerHTML = '<p style="color:#dc2626; margin:0;">❌ Không thể tạo tóm tắt tiến độ vào lúc này.</p>';
+          }
+        } catch (e) {
+          box.innerHTML = '<p style="color:#dc2626; margin:0;">❌ Lỗi kết nối AI: ' + e.message + '</p>';
+        }
+      }
+
+      // ============================================
+      // 5. FLOATING AI CHATBOT WIDGET
+      // ============================================
       function toggleStudentAi() {
         const panel = document.getElementById('student-ai-panel');
         if (panel) panel.classList.toggle('open');

@@ -58,6 +58,9 @@ CREATE TABLE dbo.Classes (
     StartDate DATETIME2,
     EndDate DATETIME2,
     MaxStudents INT DEFAULT 30,
+    Fee DECIMAL(18,2) DEFAULT 3500000,
+    Schedule NVARCHAR(100),
+    Room NVARCHAR(50),
     Status NVARCHAR(20) DEFAULT 'active',
     CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
     FOREIGN KEY (MainTeacherId) REFERENCES dbo.Teachers(Id)
@@ -98,6 +101,24 @@ CREATE TABLE dbo.Attendance (
 GO
 
 -- ============================================
+-- 8. TUITION TABLE (Học phí)
+-- ============================================
+CREATE TABLE dbo.Tuition (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    StudentId INT NOT NULL,
+    ClassId INT NOT NULL,
+    Amount DECIMAL(18, 2) NOT NULL DEFAULT 3500000,
+    DueDate DATE NOT NULL,
+    Status NVARCHAR(20) NOT NULL DEFAULT 'unpaid' CHECK (Status IN ('paid', 'unpaid', 'pending')),
+    PaidDate DATE,
+    Note NVARCHAR(500),
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (StudentId) REFERENCES dbo.Students(Id),
+    FOREIGN KEY (ClassId) REFERENCES dbo.Classes(Id)
+);
+GO
+
+-- ============================================
 -- 7. SCORES TABLE
 -- ============================================
 CREATE TABLE dbo.Scores (
@@ -113,6 +134,24 @@ CREATE TABLE dbo.Scores (
     FOREIGN KEY (StudentId) REFERENCES dbo.Students(Id),
     FOREIGN KEY (ClassId) REFERENCES dbo.Classes(Id),
     FOREIGN KEY (RecordedBy) REFERENCES dbo.Teachers(Id)
+);
+GO
+
+-- ============================================
+-- 8. TUITION TABLE (Học phí)
+-- ============================================
+CREATE TABLE dbo.Tuition (
+    Id INT IDENTITY(1,1) PRIMARY KEY,
+    StudentId INT NOT NULL,
+    ClassId INT NOT NULL,
+    Amount DECIMAL(18, 2) NOT NULL DEFAULT 3500000,
+    DueDate DATE NOT NULL,
+    Status NVARCHAR(20) NOT NULL DEFAULT 'unpaid' CHECK (Status IN ('paid', 'unpaid', 'pending')),
+    PaidDate DATE,
+    Note NVARCHAR(500),
+    CreatedAt DATETIME2 NOT NULL DEFAULT GETDATE(),
+    FOREIGN KEY (StudentId) REFERENCES dbo.Students(Id),
+    FOREIGN KEY (ClassId) REFERENCES dbo.Classes(Id)
 );
 GO
 

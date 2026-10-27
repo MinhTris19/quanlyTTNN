@@ -5,10 +5,13 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "node server.js"
+    "dev": "node server.js",
+    "test": "node test-ai-integration.js"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "cors": "^2.8.0",
+    "docx": "^9.15.0",
     "dotenv": "^16.4.1",
     "express": "^4.19.0",
     "mssql": "9.3.2",

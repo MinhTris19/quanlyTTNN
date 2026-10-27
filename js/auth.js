@@ -32,12 +32,27 @@ function clearSession() {
 
 // ============================================
 // API CALL HELPER with Authentication
+// Supports both signatures:
+// 1. apiCall(url, { method: 'POST', body: JSON.stringify(data) })
+// 2. apiCall(url, 'POST', data)
 // ============================================
-async function apiCall(url, options = {}) {
+async function apiCall(url, methodOrOptions = {}, requestBody = null) {
+  let finalOptions = {};
+  if (typeof methodOrOptions === 'string') {
+    finalOptions = {
+      method: methodOrOptions.toUpperCase()
+    };
+    if (requestBody !== null && requestBody !== undefined) {
+      finalOptions.body = typeof requestBody === 'string' ? requestBody : JSON.stringify(requestBody);
+    }
+  } else if (typeof methodOrOptions === 'object' && methodOrOptions !== null) {
+    finalOptions = { ...methodOrOptions };
+  }
+
   const sessionId = getSessionId();
   const headers = {
     'Content-Type': 'application/json',
-    ...options.headers
+    ...finalOptions.headers
   };
 
   if (sessionId) {
@@ -47,7 +62,7 @@ async function apiCall(url, options = {}) {
   try {
     const fullUrl = url.startsWith('http') ? url : `${API_BASE_URL}${url}`;
     const response = await fetch(fullUrl, {
-      ...options,
+      ...finalOptions,
       headers
     });
 

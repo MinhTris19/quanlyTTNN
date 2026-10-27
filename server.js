@@ -4,6 +4,7 @@ const dotenv = require('dotenv');
 const sql = require('mssql');
 const nodemailer = require('nodemailer');
 const { detectIntent, executeAiQuery } = require('./ai-service');
+const { recommendClassWithAi, generatePracticeWithAi, summarizeProgressWithAi } = require('./gemini-service');
 
 dotenv.config();
 
@@ -48,7 +49,8 @@ const inMemoryDb = {
   nextStudentId: 6,
   nextClassId: 3,
   nextAttendanceId: 4,
-  nextScoreId: 4,
+  nextScoreId: 6,
+  nextTuitionId: 6,
 
   users: [
     { Id: 1, FullName: 'System Admin', Email: 'admin@linguahub.local', Username: 'admin', PasswordHash: '123456', Role: 'admin', IsAdmin: 1, IsActive: 1, CreatedAt: new Date() },
@@ -72,8 +74,10 @@ const inMemoryDb = {
     { Id: 5, UserId: 8, Phone: '0911111115', JoinDate: new Date(), Status: 'active' }
   ],
   classes: [
-    { Id: 1, Name: 'TOEIC 500A', Code: 'TOEIC-500A', Description: 'Lớp luyện thi TOEIC mục tiêu 500+', MainTeacherId: 1, StartDate: new Date('2026-01-01'), EndDate: new Date('2026-06-30'), MaxStudents: 25, Status: 'active', CreatedAt: new Date() },
-    { Id: 2, Name: 'TOEIC 600A', Code: 'TOEIC-600A', Description: 'Lớp luyện thi TOEIC mục tiêu 600+', MainTeacherId: 2, StartDate: new Date('2026-01-01'), EndDate: new Date('2026-06-30'), MaxStudents: 25, Status: 'active', CreatedAt: new Date() }
+    { Id: 1, Name: 'TOEIC 500A', Code: 'TOEIC-500A', Description: 'Lớp luyện thi TOEIC mục tiêu 500+', MainTeacherId: 1, StartDate: new Date('2026-01-01'), EndDate: new Date('2026-06-30'), MaxStudents: 25, Status: 'active', Fee: 3500000, Schedule: 'Thứ 2, 4, 6 (18:00 - 19:30)', Room: 'P101', CreatedAt: new Date() },
+    { Id: 2, Name: 'TOEIC 600A', Code: 'TOEIC-600A', Description: 'Lớp luyện thi TOEIC mục tiêu 600+', MainTeacherId: 2, StartDate: new Date('2026-01-01'), EndDate: new Date('2026-06-30'), MaxStudents: 25, Status: 'active', Fee: 4200000, Schedule: 'Thứ 3, 5, 7 (19:30 - 21:00)', Room: 'P102', CreatedAt: new Date() },
+    { Id: 3, Name: 'IELTS 6.5 Intensive', Code: 'IELTS-65', Description: 'Luyện thi IELTS 4 kỹ năng mục tiêu 6.5+', MainTeacherId: 1, StartDate: new Date('2026-03-01'), EndDate: new Date('2026-08-30'), MaxStudents: 20, Status: 'open', Fee: 5500000, Schedule: 'Thứ 2, 4, 6 (19:30 - 21:00)', Room: 'P201', CreatedAt: new Date() },
+    { Id: 4, Name: 'Tiếng Anh Giao Tiếp B1', Code: 'ENG-B1', Description: 'Khóa giao tiếp phản xạ 3 tháng cho người đi làm', MainTeacherId: 2, StartDate: new Date('2026-03-15'), EndDate: new Date('2026-06-15'), MaxStudents: 25, Status: 'open', Fee: 3000000, Schedule: 'Thứ 3, 5, 7 (18:00 - 19:30)', Room: 'P202', CreatedAt: new Date() }
   ],
   classStudents: [
     { Id: 1, ClassId: 1, StudentId: 1, JoinDate: new Date(), Status: 'active' },
@@ -93,6 +97,13 @@ const inMemoryDb = {
     { Id: 3, StudentId: 3, ClassId: 1, ExamName: 'Midterm Test', Score: 72.0, MaxScore: 100, RecordedDate: new Date(), Note: 'Cần cố gắng', RecordedBy: 1 },
     { Id: 4, StudentId: 4, ClassId: 2, ExamName: 'Midterm Test', Score: 90.5, MaxScore: 100, RecordedDate: new Date(), Note: 'Xuất sắc', RecordedBy: 2 },
     { Id: 5, StudentId: 5, ClassId: 2, ExamName: 'Midterm Test', Score: 88.0, MaxScore: 100, RecordedDate: new Date(), Note: 'Giỏi', RecordedBy: 2 }
+  ],
+  tuition: [
+    { Id: 1, StudentId: 1, ClassId: 1, Amount: 3500000, DueDate: '2026-03-31', Status: 'paid', PaidDate: '2026-01-05', Note: 'Chuyển khoản VNPAY' },
+    { Id: 2, StudentId: 2, ClassId: 1, Amount: 3500000, DueDate: '2026-03-31', Status: 'paid', PaidDate: '2026-01-07', Note: 'Đóng tiền mặt' },
+    { Id: 3, StudentId: 3, ClassId: 1, Amount: 3500000, DueDate: '2026-03-31', Status: 'unpaid', PaidDate: null, Note: 'Chờ gia hạn' },
+    { Id: 4, StudentId: 4, ClassId: 2, Amount: 4200000, DueDate: '2026-03-31', Status: 'paid', PaidDate: '2026-01-10', Note: 'Chuyển khoản' },
+    { Id: 5, StudentId: 5, ClassId: 2, Amount: 4200000, DueDate: '2026-03-31', Status: 'unpaid', PaidDate: null, Note: 'Chưa thanh toán' }
   ]
 };
 
@@ -984,7 +995,108 @@ app.get('/api/teacher/attendance', (req, res) => {
   return res.status(200).json({ success: true, data: records });
 });
 
-// POST /api/teacher/attendance
+// GET /api/teacher/classes/:classId/attendance (Chi tiết điểm danh theo lớp)
+app.get('/api/teacher/classes/:classId/attendance', (req, res) => {
+  if (!req.user || (req.user.role !== 'teacher' && req.user.role !== 'admin')) {
+    return res.status(403).json({ success: false, message: 'Chỉ giảng viên được phép truy cập' });
+  }
+
+  const classId = parseInt(req.params.classId);
+  const targetDate = req.query.date || new Date().toISOString().split('T')[0];
+
+  const cls = inMemoryDb.classes.find(c => c.Id === classId);
+  if (!cls) {
+    return res.status(404).json({ success: false, message: 'Lớp học không tồn tại' });
+  }
+
+  // Danh sách học viên đang học trong lớp
+  const studentEnrollments = inMemoryDb.classStudents.filter(cs => cs.ClassId === classId && cs.Status === 'active');
+  const studentsAttendance = studentEnrollments.map(en => {
+    const student = inMemoryDb.students.find(s => s.Id === en.StudentId);
+    const user = student ? inMemoryDb.users.find(u => u.Id === student.UserId) : null;
+    const record = inMemoryDb.attendance.find(a => a.ClassId === classId && a.StudentId === en.StudentId && a.AttendanceDate === targetDate);
+
+    // Tính tổng số buổi chuyên cần của học viên trong lớp
+    const allStudentAtt = inMemoryDb.attendance.filter(a => a.ClassId === classId && a.StudentId === en.StudentId);
+    const presentCount = allStudentAtt.filter(a => a.Status === 'present' || a.Status === 'late').length;
+
+    return {
+      StudentId: en.StudentId,
+      FullName: user?.FullName || `Học viên #${en.StudentId}`,
+      Email: user?.Email || '',
+      Phone: student?.Phone || '',
+      CurrentStatus: record ? record.Status : 'present', // mặc định là present
+      CurrentNote: record ? record.Note : '',
+      AttendanceId: record ? record.Id : null,
+      TotalAttended: presentCount,
+      TotalSessions: allStudentAtt.length
+    };
+  });
+
+  // Lịch sử các ngày đã điểm danh của lớp
+  const uniqueDates = [...new Set(inMemoryDb.attendance.filter(a => a.ClassId === classId).map(a => a.AttendanceDate))].sort().reverse();
+
+  return res.status(200).json({
+    success: true,
+    className: cls.Name,
+    date: targetDate,
+    students: studentsAttendance,
+    historyDates: uniqueDates
+  });
+});
+
+// POST /api/teacher/classes/:classId/attendance/bulk (Lưu điểm danh cả lớp)
+app.post('/api/teacher/classes/:classId/attendance/bulk', (req, res) => {
+  if (!req.user || (req.user.role !== 'teacher' && req.user.role !== 'admin')) {
+    return res.status(403).json({ success: false, message: 'Chỉ giảng viên được phép điểm danh' });
+  }
+
+  const classId = parseInt(req.params.classId);
+  const { date, attendanceList } = req.body;
+  const attendanceDate = date || new Date().toISOString().split('T')[0];
+
+  if (!Array.isArray(attendanceList) || attendanceList.length === 0) {
+    return res.status(400).json({ success: false, message: 'Danh sách điểm danh không hợp lệ' });
+  }
+
+  const teacher = inMemoryDb.teachers.find(t => t.UserId === req.user.id);
+  let updatedCount = 0;
+  let insertedCount = 0;
+
+  attendanceList.forEach(item => {
+    const sId = parseInt(item.studentId);
+    const existingIndex = inMemoryDb.attendance.findIndex(a => 
+      a.ClassId === classId && a.StudentId === sId && a.AttendanceDate === attendanceDate
+    );
+
+    if (existingIndex >= 0) {
+      inMemoryDb.attendance[existingIndex].Status = item.status || 'present';
+      inMemoryDb.attendance[existingIndex].Note = item.note || '';
+      inMemoryDb.attendance[existingIndex].RecordedAt = new Date();
+      updatedCount++;
+    } else {
+      inMemoryDb.attendance.push({
+        Id: inMemoryDb.nextAttendanceId++,
+        ClassId: classId,
+        StudentId: sId,
+        AttendanceDate: attendanceDate,
+        Status: item.status || 'present',
+        Note: item.note || '',
+        RecordedBy: teacher?.Id || 1,
+        RecordedAt: new Date()
+      });
+      insertedCount++;
+    }
+  });
+
+  return res.status(200).json({
+    success: true,
+    message: `Điểm danh ngày ${attendanceDate} thành công! (Thêm mới: ${insertedCount}, Cập nhật: ${updatedCount})`,
+    data: { date: attendanceDate, insertedCount, updatedCount }
+  });
+});
+
+// POST /api/teacher/attendance (Ghi nhận điểm danh đơn lẻ)
 app.post('/api/teacher/attendance', (req, res) => {
   if (!req.user || req.user.role !== 'teacher') {
     return res.status(403).json({ success: false, message: 'Chỉ giảng viên được phép truy cập' });
@@ -995,20 +1107,36 @@ app.post('/api/teacher/attendance', (req, res) => {
     return res.status(400).json({ success: false, message: 'Dữ liệu không hợp lệ', errors: { general: 'Thiếu thông tin điểm danh' } });
   }
 
+  const cId = parseInt(classId);
+  const sId = parseInt(studentId);
+  const attendanceDate = date || new Date().toISOString().split('T')[0];
   const teacher = inMemoryDb.teachers.find(t => t.UserId === req.user.id);
-  const newAttendance = {
-    Id: inMemoryDb.nextAttendanceId++,
-    ClassId: parseInt(classId),
-    StudentId: parseInt(studentId),
-    AttendanceDate: date || new Date().toISOString().split('T')[0],
-    Status: status, // 'present', 'absent', 'late', 'excused'
-    Note: note || '',
-    RecordedBy: teacher?.Id || 1,
-    RecordedAt: new Date()
-  };
-  inMemoryDb.attendance.push(newAttendance);
 
-  return res.status(201).json({ success: true, message: 'Ghi nhận điểm danh thành công', data: newAttendance });
+  const existingIndex = inMemoryDb.attendance.findIndex(a =>
+    a.ClassId === cId && a.StudentId === sId && a.AttendanceDate === attendanceDate
+  );
+
+  let record;
+  if (existingIndex >= 0) {
+    inMemoryDb.attendance[existingIndex].Status = status;
+    inMemoryDb.attendance[existingIndex].Note = note || '';
+    inMemoryDb.attendance[existingIndex].RecordedAt = new Date();
+    record = inMemoryDb.attendance[existingIndex];
+  } else {
+    record = {
+      Id: inMemoryDb.nextAttendanceId++,
+      ClassId: cId,
+      StudentId: sId,
+      AttendanceDate: attendanceDate,
+      Status: status, // 'present', 'absent', 'late', 'excused'
+      Note: note || '',
+      RecordedBy: teacher?.Id || 1,
+      RecordedAt: new Date()
+    };
+    inMemoryDb.attendance.push(record);
+  }
+
+  return res.status(200).json({ success: true, message: 'Ghi nhận điểm danh thành công', data: record });
 });
 
 // ============================================
@@ -1101,6 +1229,318 @@ app.get('/api/student/scores', (req, res) => {
 });
 
 // ============================================
+// F09: ĐĂNG KÝ KHÓA HỌC (STUDENT ENROLLMENT)
+// ============================================
+
+// GET /api/student/available-classes
+app.get('/api/student/available-classes', (req, res) => {
+  if (!req.user || req.user.role !== 'student') {
+    return res.status(403).json({ success: false, message: 'Chỉ học viên được phép truy cập' });
+  }
+
+  const student = inMemoryDb.students.find(s => s.UserId === req.user.id);
+  const enrolledClassIds = student
+    ? inMemoryDb.classStudents.filter(cs => cs.StudentId === student.Id && cs.Status === 'active').map(cs => cs.ClassId)
+    : [];
+
+  const availableClasses = inMemoryDb.classes
+    .filter(c => c.Status === 'active' || c.Status === 'open')
+    .map(c => {
+      const teacher = inMemoryDb.teachers.find(t => t.Id === c.MainTeacherId);
+      const teacherUser = teacher ? inMemoryDb.users.find(u => u.Id === teacher.UserId) : null;
+      const enrolledCount = inMemoryDb.classStudents.filter(cs => cs.ClassId === c.Id && cs.Status === 'active').length;
+      return {
+        Id: c.Id,
+        Name: c.Name,
+        Code: c.Code,
+        Description: c.Description,
+        TeacherName: teacherUser?.FullName || 'Chưa phân công',
+        Fee: c.Fee || 3500000,
+        Schedule: c.Schedule || 'Thứ 2, 4, 6 (18:00 - 19:30)',
+        Room: c.Room || 'P101',
+        MaxStudents: c.MaxStudents || 25,
+        EnrolledCount: enrolledCount,
+        IsEnrolled: enrolledClassIds.includes(c.Id),
+        IsFull: enrolledCount >= (c.MaxStudents || 25)
+      };
+    });
+
+  return res.status(200).json({ success: true, data: availableClasses });
+});
+
+// POST /api/student/enroll
+app.post('/api/student/enroll', (req, res) => {
+  if (!req.user || req.user.role !== 'student') {
+    return res.status(403).json({ success: false, message: 'Chỉ học viên được phép đăng ký lớp học' });
+  }
+
+  const { classId } = req.body;
+  if (!classId) {
+    return res.status(400).json({ success: false, message: 'Vui lòng chọn lớp học cần đăng ký' });
+  }
+
+  let student = inMemoryDb.students.find(s => s.UserId === req.user.id);
+  if (!student) {
+    student = { Id: inMemoryDb.nextStudentId++, UserId: req.user.id, Phone: '', Status: 'active', JoinDate: new Date() };
+    inMemoryDb.students.push(student);
+  }
+
+  const cls = inMemoryDb.classes.find(c => c.Id === Number(classId));
+  if (!cls) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy lớp học' });
+  }
+
+  const existing = inMemoryDb.classStudents.find(cs => cs.ClassId === cls.Id && cs.StudentId === student.Id && cs.Status === 'active');
+  if (existing) {
+    return res.status(400).json({ success: false, message: 'Bạn đã đăng ký lớp học này trước đó' });
+  }
+
+  const currentCount = inMemoryDb.classStudents.filter(cs => cs.ClassId === cls.Id && cs.Status === 'active').length;
+  if (currentCount >= (cls.MaxStudents || 25)) {
+    return res.status(400).json({ success: false, message: 'Lớp học đã đủ sĩ số tối đa' });
+  }
+
+  const newEnrollment = {
+    Id: inMemoryDb.classStudents.length + 1,
+    ClassId: cls.Id,
+    StudentId: student.Id,
+    JoinDate: new Date(),
+    Status: 'active'
+  };
+  inMemoryDb.classStudents.push(newEnrollment);
+
+  const dueDate = new Date();
+  dueDate.setDate(dueDate.getDate() + 30);
+  const newTuition = {
+    Id: inMemoryDb.nextTuitionId++,
+    StudentId: student.Id,
+    ClassId: cls.Id,
+    Amount: cls.Fee || 3500000,
+    DueDate: dueDate.toISOString().split('T')[0],
+    Status: 'unpaid',
+    PaidDate: null,
+    Note: 'Học phí đăng ký khóa học mới'
+  };
+  inMemoryDb.tuition.push(newTuition);
+
+  return res.status(200).json({
+    success: true,
+    message: `Đăng ký lớp ${cls.Name} thành công! Hạn đóng học phí: ${newTuition.DueDate}.`,
+    data: { enrollment: newEnrollment, tuition: newTuition }
+  });
+});
+
+// ============================================
+// F10 & F11: QUẢN LÝ HỌC PHÍ (TUITION MANAGEMENT)
+// ============================================
+
+// GET /api/student/tuition (Học viên tra cứu học phí)
+app.get('/api/student/tuition', (req, res) => {
+  if (!req.user || req.user.role !== 'student') {
+    return res.status(403).json({ success: false, message: 'Chỉ học viên được phép truy cập' });
+  }
+
+  const student = inMemoryDb.students.find(s => s.UserId === req.user.id);
+  if (!student) {
+    return res.status(200).json({ success: true, data: [] });
+  }
+
+  const records = inMemoryDb.tuition
+    .filter(t => t.StudentId === student.Id)
+    .map(t => {
+      const cls = inMemoryDb.classes.find(c => c.Id === t.ClassId);
+      return {
+        Id: t.Id,
+        ClassName: cls?.Name || 'Lớp học',
+        ClassCode: cls?.Code || '',
+        Amount: t.Amount,
+        DueDate: t.DueDate,
+        Status: t.Status,
+        PaidDate: t.PaidDate,
+        Note: t.Note
+      };
+    });
+
+  return res.status(200).json({ success: true, data: records });
+});
+
+// GET /api/admin/tuition (Admin xem danh sách học phí)
+app.get('/api/admin/tuition', (req, res) => {
+  if (!req.user || (req.user.role !== 'admin' && !req.user.isAdmin)) {
+    return res.status(403).json({ success: false, message: 'Chỉ quản trị viên có quyền truy cập' });
+  }
+
+  const records = inMemoryDb.tuition.map(t => {
+    const student = inMemoryDb.students.find(s => s.Id === t.StudentId);
+    const user = student ? inMemoryDb.users.find(u => u.Id === student.UserId) : null;
+    const cls = inMemoryDb.classes.find(c => c.Id === t.ClassId);
+    return {
+      Id: t.Id,
+      StudentName: user?.FullName || `Học viên #${t.StudentId}`,
+      StudentEmail: user?.Email || '',
+      ClassName: cls?.Name || 'Lớp học',
+      ClassCode: cls?.Code || '',
+      Amount: t.Amount,
+      DueDate: t.DueDate,
+      Status: t.Status,
+      PaidDate: t.PaidDate,
+      Note: t.Note
+    };
+  });
+
+  return res.status(200).json({ success: true, data: records });
+});
+
+// PUT /api/admin/tuition/:id (Admin cập nhật trạng thái học phí)
+app.put('/api/admin/tuition/:id', (req, res) => {
+  if (!req.user || (req.user.role !== 'admin' && !req.user.isAdmin)) {
+    return res.status(403).json({ success: false, message: 'Chỉ quản trị viên có quyền cập nhật học phí' });
+  }
+
+  const tuitionId = Number(req.params.id);
+  const tuitionRecord = inMemoryDb.tuition.find(t => t.Id === tuitionId);
+  if (!tuitionRecord) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy bản ghi học phí' });
+  }
+
+  const { status, note, paidDate } = req.body;
+  if (status) tuitionRecord.Status = status;
+  if (note !== undefined) tuitionRecord.Note = note;
+  if (status === 'paid') {
+    tuitionRecord.PaidDate = paidDate || new Date().toISOString().split('T')[0];
+  } else if (status === 'unpaid') {
+    tuitionRecord.PaidDate = null;
+  }
+
+  return res.status(200).json({ success: true, message: 'Cập nhật trạng thái học phí thành công', data: tuitionRecord });
+});
+
+// ============================================
+// F13: QUẢN LÝ ĐIỂM SỐ (TEACHER GRADE MANAGEMENT)
+// ============================================
+
+// GET /api/teacher/classes/:classId/scores
+app.get('/api/teacher/classes/:classId/scores', (req, res) => {
+  if (!req.user || (req.user.role !== 'teacher' && req.user.role !== 'admin')) {
+    return res.status(403).json({ success: false, message: 'Chỉ giảng viên được phép xem điểm lớp học' });
+  }
+
+  const classId = Number(req.params.classId);
+  const classObj = inMemoryDb.classes.find(c => c.Id === classId);
+  if (!classObj) {
+    return res.status(404).json({ success: false, message: 'Không tìm thấy lớp học' });
+  }
+
+  const studentEnrollments = inMemoryDb.classStudents.filter(cs => cs.ClassId === classId && cs.Status === 'active');
+  const scoresData = studentEnrollments.map(en => {
+    const student = inMemoryDb.students.find(s => s.Id === en.StudentId);
+    const user = student ? inMemoryDb.users.find(u => u.Id === student.UserId) : null;
+    const studentScores = inMemoryDb.scores.filter(sc => sc.ClassId === classId && sc.StudentId === en.StudentId);
+    return {
+      StudentId: en.StudentId,
+      FullName: user?.FullName || `Học viên #${en.StudentId}`,
+      Email: user?.Email || '',
+      Scores: studentScores
+    };
+  });
+
+  return res.status(200).json({ success: true, className: classObj.Name, data: scoresData });
+});
+
+// POST /api/teacher/scores
+app.post('/api/teacher/scores', (req, res) => {
+  if (!req.user || (req.user.role !== 'teacher' && req.user.role !== 'admin')) {
+    return res.status(403).json({ success: false, message: 'Chỉ giảng viên có quyền nhập điểm' });
+  }
+
+  const { classId, studentId, examName, score, maxScore = 100, note } = req.body;
+  if (!classId || !studentId || !examName || score === undefined) {
+    return res.status(400).json({ success: false, message: 'Vui lòng điền đầy đủ thông tin điểm kiểm tra' });
+  }
+
+  const numScore = Number(score);
+  if (isNaN(numScore) || numScore < 0 || numScore > Number(maxScore)) {
+    return res.status(400).json({ success: false, message: `Điểm số không hợp lệ (phải từ 0 đến ${maxScore})` });
+  }
+
+  const existingIndex = inMemoryDb.scores.findIndex(sc => 
+    sc.ClassId === Number(classId) && sc.StudentId === Number(studentId) && sc.ExamName.toLowerCase() === examName.trim().toLowerCase()
+  );
+
+  let resultScore;
+  if (existingIndex >= 0) {
+    inMemoryDb.scores[existingIndex].Score = numScore;
+    inMemoryDb.scores[existingIndex].MaxScore = Number(maxScore);
+    if (note !== undefined) inMemoryDb.scores[existingIndex].Note = note;
+    inMemoryDb.scores[existingIndex].RecordedDate = new Date();
+    resultScore = inMemoryDb.scores[existingIndex];
+  } else {
+    resultScore = {
+      Id: inMemoryDb.nextScoreId++,
+      StudentId: Number(studentId),
+      ClassId: Number(classId),
+      ExamName: examName.trim(),
+      Score: numScore,
+      MaxScore: Number(maxScore),
+      RecordedDate: new Date(),
+      Note: note || '',
+      RecordedBy: req.user.id
+    };
+    inMemoryDb.scores.push(resultScore);
+  }
+
+  return res.status(200).json({ success: true, message: 'Lưu điểm thi thành công', data: resultScore });
+});
+
+// ============================================
+// F18: 3 CHỨC NĂNG AI CHUYÊN SÂU THEO BÁO CÁO
+// ============================================
+
+// 1. POST /api/ai/recommend-class (AI Tư vấn lớp học phù hợp)
+app.post('/api/ai/recommend-class', async (req, res) => {
+  try {
+    const { level, availability, goal } = req.body;
+    const openClasses = inMemoryDb.classes.filter(c => c.Status === 'active' || c.Status === 'open');
+    const result = await recommendClassWithAi(level, availability, goal, openClasses);
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error('Error recommendClass:', err);
+    return res.status(500).json({ success: false, message: 'Lỗi xử lý tư vấn AI', error: err.message });
+  }
+});
+
+// 2. POST /api/ai/generate-practice (AI Sinh bài luyện tập ngắn trắc nghiệm)
+app.post('/api/ai/generate-practice', async (req, res) => {
+  try {
+    const { level = 'A2', topic = 'Từ vựng giao tiếp', number = 5 } = req.body;
+    const result = await generatePracticeWithAi(level, topic, number);
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error('Error generatePractice:', err);
+    return res.status(500).json({ success: false, message: 'Lỗi sinh bài luyện tập AI', error: err.message });
+  }
+});
+
+// 3. POST /api/ai/summarize-progress (AI Tóm tắt tiến độ học tập 4 phần)
+app.post('/api/ai/summarize-progress', async (req, res) => {
+  try {
+    if (!req.user || req.user.role !== 'student') {
+      return res.status(403).json({ success: false, message: 'Chỉ học viên được xem tóm tắt tiến độ của mình' });
+    }
+
+    const student = inMemoryDb.students.find(s => s.UserId === req.user.id);
+    const scores = student ? inMemoryDb.scores.filter(sc => sc.StudentId === student.Id) : [];
+    const attendance = student ? inMemoryDb.attendance.filter(a => a.StudentId === student.Id) : [];
+
+    const result = await summarizeProgressWithAi(req.user.FullName || req.user.name || 'Học viên', scores, attendance);
+    return res.status(200).json(result);
+  } catch (err) {
+    console.error('Error summarizeProgress:', err);
+    return res.status(500).json({ success: false, message: 'Lỗi tạo tóm tắt AI', error: err.message });
+  }
+});
+
+// ============================================
 // UNIFIED AI CHAT ENDPOINT & ROLE HELPERS
 // ============================================
 
@@ -1128,7 +1568,7 @@ async function processAiRequest(req, res, targetRole) {
     const intent = detectIntent(question, effectiveRole);
     const dbSource = useSql && sqlPool ? sqlPool : inMemoryDb;
 
-    const result = await executeAiQuery(req.user.id, effectiveRole, question, intent, dbSource);
+    const result = await executeAiQuery(req.user.id, effectiveRole, question, intent, dbSource, req.user);
 
     if (result.success === false && result.error) {
       return res.status(500).json({
@@ -1145,6 +1585,9 @@ async function processAiRequest(req, res, targetRole) {
         answer: result.answer,
         role: effectiveRole,
         intent: intent,
+        engine: result.engine || 'rule-based',
+        model: result.model || null,
+        fallbackReason: result.fallbackReason || null,
         details: result.data || result
       }
     });

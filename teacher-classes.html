@@ -206,6 +206,43 @@
     </div>
   </div>
 
+  <!-- Grade Modal (F13) -->
+  <div id="grade-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Nhập / Cập nhật điểm kiểm tra (F13)</h2>
+        <button class="close-btn" onclick="closeGradeModal()">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>Chọn học viên (*):</label>
+        <select id="grade-student-select">
+          <option value="">-- Chọn học viên --</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Tên bài kiểm tra (*):</label>
+        <select id="grade-exam-name">
+          <option value="Midterm Test">Midterm Test (Giữa kỳ)</option>
+          <option value="Final Exam">Final Exam (Cuối kỳ)</option>
+          <option value="Quiz 1">Quiz 1 (Kiểm tra nhanh)</option>
+          <option value="Speaking Test">Speaking Test (Vấn đáp)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Điểm số (Thang điểm 100) (*):</label>
+        <input type="number" id="grade-score" min="0" max="100" step="0.5" placeholder="Ví dụ: 85.5" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;" />
+      </div>
+      <div class="form-group">
+        <label>Nhận xét sư phạm:</label>
+        <input type="text" id="grade-note" placeholder="Ví dụ: Nắm vững ngữ pháp, phản xạ tốt" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal btn-cancel" onclick="closeGradeModal()">Hủy</button>
+        <button class="btn-modal btn-primary-modal" id="btn-confirm-save-grade" onclick="saveStudentGrade()">Lưu Điểm Thi</button>
+      </div>
+    </div>
+  </div>
+
   <!-- AI Toggle & Panel -->
   <button class="ai-toggle" type="button" onclick="toggleTeacherAi()" aria-label="Mở trợ lý AI">🤖</button>
   <div class="ai-panel" id="teacher-ai-panel">
@@ -275,8 +312,9 @@
               <span class="badge">${cls.Status === 'active' ? '🟢 Đang hoạt động' : '🔴 Tạm dừng'}</span>
             </div>
           </div>
-          <div class="btn-group">
-            <button class="btn-view" onclick="viewClassDetail(${cls.Id})">Quản lý Học viên & Lớp →</button>
+          <div class="btn-group" style="display:flex; gap:8px;">
+            <button class="btn-view" style="flex:1;" onclick="viewClassDetail(${cls.Id})">Quản lý Lớp →</button>
+            <button class="btn-view" style="background:#0284c7; flex:1;" onclick="viewClassDetail(${cls.Id}); setTimeout(() => { document.getElementById('attendance-date-input')?.scrollIntoView({ behavior: 'smooth' }); }, 300);">📝 Điểm Danh</button>
           </div>
         </div>
       `).join('');
@@ -370,8 +408,49 @@
               </div>
             `}
           </div>
+
+          <!-- Bảng Điểm & Quản lý Kết quả Kiểm tra (F13) -->
+          <div class="students-section" style="margin-top: 28px;">
+            <div class="students-header">
+              <h3>🏆 Bảng Điểm & Đánh giá Kết quả Kiểm tra (F13)</h3>
+              <button class="btn-add-student" style="background:#16a34a;" onclick="openGradeModal(${cls.Id})">+ Nhập Điểm Mới</button>
+            </div>
+            <div id="grades-table-container">
+              <p style="color:#64748b;">Đang tải dữ liệu điểm thi...</p>
+            </div>
+          </div>
+
+          <!-- ĐIỂM DANH BUỔI HỌC & CHUYÊN CẦN (F12) -->
+          <div class="students-section" style="margin-top: 28px;">
+            <div class="students-header">
+              <h3>📝 Điểm Danh Buổi Học & Chuyên Cần (F12)</h3>
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <button class="btn-add-student" style="background:#16a34a;" type="button" onclick="markAllPresent()">⚡ Tất Cả Có Mặt</button>
+                <button class="btn-add-student" style="background:#0284c7;" id="btn-save-attendance" type="button" onclick="saveClassAttendance(${cls.Id})">💾 Lưu Bảng Điểm Danh</button>
+              </div>
+            </div>
+
+            <!-- Toolbar chọn ngày và xem lịch sử -->
+            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px; background:#f8fafc; padding:12px 16px; border-radius:10px; border:1px solid #e2e8f0;">
+              <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <label style="font-weight:600; font-size:0.88rem; color:#334155;">📅 Chọn Ngày Điểm Danh:</label>
+                <input type="date" id="attendance-date-input" style="padding:7px 12px; border:1px solid #cbd5e1; border-radius:8px; font-family:inherit; font-size:0.9rem;" onchange="loadClassAttendance(${cls.Id}, this.value)" />
+                <span id="attendance-summary-badge" style="font-size:0.82rem; padding:4px 10px; background:#e0f2fe; color:#0369a1; border-radius:999px; font-weight:600;">Đang tải...</span>
+              </div>
+              <div id="attendance-history-tags" style="display:flex; gap:6px; align-items:center; flex-wrap:wrap;">
+                <span style="font-size:0.8rem; color:#64748b;">Lịch sử:</span>
+              </div>
+            </div>
+
+            <div id="attendance-table-container">
+              <p style="color:#64748b;">Đang tải danh sách điểm danh...</p>
+            </div>
+          </div>
+
         </div>
       `;
+      loadClassScores(cls.Id);
+      loadClassAttendance(cls.Id);
     }
 
     // Open Add Student Modal
@@ -468,6 +547,318 @@
     function showClassDetailView() {
       document.getElementById('classes-view').classList.remove('active');
       document.getElementById('class-detail-view').classList.add('active');
+    }
+
+    // ============================================
+    // QUẢN LÝ ĐIỂM SỐ HỌC VIÊN (F13)
+    // ============================================
+    async function loadClassScores(classId) {
+      const container = document.getElementById('grades-table-container');
+      if (!container) return;
+      container.innerHTML = '<p style="color:#64748b;">Đang tải bảng điểm...</p>';
+
+      try {
+        const { status, data } = await apiCall(`/api/teacher/classes/${classId}/scores`);
+        if (status === 200 && data.success && data.data.length > 0) {
+          container.innerHTML = `
+            <div style="overflow-x:auto;">
+              <table class="students-table">
+                <thead>
+                  <tr>
+                    <th>Học Viên</th>
+                    <th>Email</th>
+                    <th>Bài Kiểm Tra</th>
+                    <th>Điểm Số</th>
+                    <th>Ghi Chú Sư Phạm</th>
+                    <th>Thao Tác</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${data.data.map(item => {
+                    const scoreList = item.Scores && item.Scores.length > 0 ? item.Scores : [{ ExamName: 'Chưa có', Score: '—', MaxScore: 100, Note: 'Chưa kiểm tra' }];
+                    const safeName = (item.FullName || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                    return scoreList.map(sc => {
+                      const safeNote = (sc.Note || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+                      const safeExam = (sc.ExamName !== 'Chưa có' ? sc.ExamName : 'Midterm Test').replace(/'/g, "\\'");
+                      const safeScore = sc.Score !== '—' ? sc.Score : '';
+                      return `
+                      <tr>
+                        <td><strong>${item.FullName}</strong></td>
+                        <td>${item.Email}</td>
+                        <td><span class="badge" style="background:#eff6ff; color:#2563eb;">${sc.ExamName}</span></td>
+                        <td><strong style="color:#16a34a; font-size:1.05rem;">${sc.Score}</strong> ${sc.Score !== '—' ? '/ ' + sc.MaxScore : ''}</td>
+                        <td>${sc.Note || '—'}</td>
+                        <td>
+                          <button class="btn-sm-remove" style="background:#2563eb; color:white; border-color:#2563eb;" onclick="openGradeModalForStudent(${classId}, ${item.StudentId}, '${safeName}', '${safeExam}', '${safeScore}', '${safeNote}')">
+                            ✏️ Nhập / Sửa Điểm
+                          </button>
+                        </td>
+                      </tr>
+                    `;
+                    }).join('');
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+        } else {
+          container.innerHTML = '<p style="color:#64748b; padding:16px; background:#f8fafc; border-radius:8px;">Lớp học chưa có học viên hoặc chưa có bài kiểm tra nào.</p>';
+        }
+      } catch (e) {
+        container.innerHTML = '<p style="color:#dc2626;">Lỗi tải dữ liệu điểm thi.</p>';
+      }
+    }
+
+    let gradeModalClassId = null;
+    async function openGradeModal(classId, selectedStudentId = null, examName = '', score = '', note = '') {
+      gradeModalClassId = classId;
+      document.getElementById('grade-modal').classList.add('open');
+      const select = document.getElementById('grade-student-select');
+      select.innerHTML = '<option value="">-- Đang tải danh sách học viên... --</option>';
+
+      document.getElementById('grade-exam-name').value = examName || 'Midterm Test';
+      document.getElementById('grade-score').value = score || '';
+      document.getElementById('grade-note').value = note || '';
+
+      try {
+        const { status, data } = await apiCall(`/api/teacher/classes/${classId}`);
+        const students = data.students || (data.data && data.data.students) || [];
+        if (status === 200 && data.success && students.length > 0) {
+          select.innerHTML = '<option value="">-- Chọn học viên cần nhập điểm --</option>' +
+            students.map(s => `
+              <option value="${s.Id}" ${selectedStudentId && Number(s.Id) === Number(selectedStudentId) ? 'selected' : ''}>
+                ${s.FullName} (${s.Email || 'Học viên'})
+              </option>
+            `).join('');
+        } else {
+          select.innerHTML = '<option value="">Lớp này hiện chưa có học viên nào</option>';
+        }
+      } catch (e) {
+        select.innerHTML = '<option value="">Lỗi tải danh sách học viên</option>';
+      }
+    }
+
+    function openGradeModalForStudent(classId, studentId, studentName, examName, currentScore, note) {
+      openGradeModal(classId, studentId, examName, currentScore, note);
+    }
+
+    function closeGradeModal() {
+      document.getElementById('grade-modal').classList.remove('open');
+    }
+
+    async function saveStudentGrade() {
+      const studentId = document.getElementById('grade-student-select').value;
+      const examName = document.getElementById('grade-exam-name').value;
+      const score = document.getElementById('grade-score').value;
+      const note = document.getElementById('grade-note').value.trim();
+
+      if (!studentId || !examName || score === '') {
+        alert('Vui lòng chọn học viên và nhập điểm số hợp lệ');
+        return;
+      }
+
+      const numScore = parseFloat(score);
+      if (isNaN(numScore) || numScore < 0 || numScore > 100) {
+        alert('Điểm số phải là số từ 0 đến 100');
+        return;
+      }
+
+      const btn = document.getElementById('btn-confirm-save-grade');
+      btn.disabled = true;
+      btn.textContent = 'Đang lưu...';
+
+      try {
+        const { status, data } = await apiCall('/api/teacher/scores', {
+          method: 'POST',
+          body: JSON.stringify({
+            classId: gradeModalClassId,
+            studentId: parseInt(studentId),
+            examName,
+            score: numScore,
+            maxScore: 100,
+            note
+          })
+        });
+
+        if (status === 200 && data.success) {
+          showAlert(data.message);
+          closeGradeModal();
+          loadClassScores(gradeModalClassId);
+        } else {
+          alert(data.message || 'Không thể lưu điểm');
+        }
+      } catch (e) {
+        alert('Lỗi kết nối khi lưu điểm: ' + e.message);
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Lưu Điểm Thi';
+      }
+    }
+
+    // ============================================
+    // ĐIỂM DANH BUỔI HỌC & CHUYÊN CẦN (F12)
+    // ============================================
+    let currentAttendanceStudents = [];
+    async function loadClassAttendance(classId, date = null) {
+      const container = document.getElementById('attendance-table-container');
+      const dateInput = document.getElementById('attendance-date-input');
+      const badge = document.getElementById('attendance-summary-badge');
+      const tagsContainer = document.getElementById('attendance-history-tags');
+      if (!container) return;
+
+      const targetDate = date || (dateInput && dateInput.value) || new Date().toISOString().split('T')[0];
+      if (dateInput) dateInput.value = targetDate;
+      container.innerHTML = '<p style="color:#64748b; padding:12px;">Đang tải danh sách học viên điểm danh ngày ' + targetDate + '...</p>';
+
+      try {
+        const { status, data } = await apiCall(`/api/teacher/classes/${classId}/attendance?date=${targetDate}`);
+        if (status === 200 && data.success) {
+          currentAttendanceStudents = data.students || [];
+
+          // Render summary badge
+          const presentCount = currentAttendanceStudents.filter(s => s.CurrentStatus === 'present').length;
+          const lateCount = currentAttendanceStudents.filter(s => s.CurrentStatus === 'late').length;
+          const absentCount = currentAttendanceStudents.filter(s => s.CurrentStatus === 'absent' || s.CurrentStatus === 'excused').length;
+          if (badge) {
+            badge.innerHTML = `Có mặt: <strong>${presentCount}</strong> | Muộn: <strong>${lateCount}</strong> | Vắng: <strong>${absentCount}</strong>`;
+          }
+
+          // Render history dates tags
+          if (tagsContainer && data.historyDates) {
+            tagsContainer.innerHTML = '<span style="font-size:0.8rem; color:#64748b;">Lịch sử:</span>' +
+              data.historyDates.slice(0, 5).map(d => `
+                <button type="button" style="padding:2px 8px; border:1px solid #cbd5e1; background:${d === targetDate ? '#0284c7' : '#ffffff'}; color:${d === targetDate ? '#ffffff' : '#334155'}; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="loadClassAttendance(${classId}, '${d}')">
+                  ${d}
+                </button>
+              `).join('');
+          }
+
+          if (currentAttendanceStudents.length === 0) {
+            container.innerHTML = '<p style="color:#64748b; padding:16px; background:#f8fafc; border-radius:8px;">Lớp học này hiện chưa có học viên nào.</p>';
+            return;
+          }
+
+          container.innerHTML = `
+            <div style="overflow-x:auto;">
+              <table class="students-table">
+                <thead>
+                  <tr>
+                    <th>Học Viên</th>
+                    <th>Trạng Thái Điểm Danh</th>
+                    <th>Ghi Chú Buổi Học</th>
+                    <th>Chuyên Cần Tích Lũy</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${currentAttendanceStudents.map(s => {
+                    const statusVal = s.CurrentStatus || 'present';
+                    const attRate = s.TotalSessions > 0 ? Math.round((s.TotalAttended / s.TotalSessions) * 100) : 100;
+                    return `
+                      <tr>
+                        <td>
+                          <strong>${s.FullName}</strong>
+                          <div style="font-size:0.8rem; color:#64748b;">HV${String(s.StudentId).padStart(3, '0')} • ${s.Email}</div>
+                        </td>
+                        <td>
+                          <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                            <label style="display:inline-flex; align-items:center; gap:4px; font-size:0.85rem; cursor:pointer;">
+                              <input type="radio" name="att_status_${s.StudentId}" value="present" ${statusVal === 'present' ? 'checked' : ''} />
+                              <span style="color:#166534; font-weight:600;">🟢 Có mặt</span>
+                            </label>
+                            <label style="display:inline-flex; align-items:center; gap:4px; font-size:0.85rem; cursor:pointer;">
+                              <input type="radio" name="att_status_${s.StudentId}" value="late" ${statusVal === 'late' ? 'checked' : ''} />
+                              <span style="color:#b45309; font-weight:600;">🟡 Đi muộn</span>
+                            </label>
+                            <label style="display:inline-flex; align-items:center; gap:4px; font-size:0.85rem; cursor:pointer;">
+                              <input type="radio" name="att_status_${s.StudentId}" value="excused" ${statusVal === 'excused' ? 'checked' : ''} />
+                              <span style="color:#0369a1; font-weight:600;">🔵 Có phép</span>
+                            </label>
+                            <label style="display:inline-flex; align-items:center; gap:4px; font-size:0.85rem; cursor:pointer;">
+                              <input type="radio" name="att_status_${s.StudentId}" value="absent" ${statusVal === 'absent' ? 'checked' : ''} />
+                              <span style="color:#991b1b; font-weight:600;">🔴 Vắng mặt</span>
+                            </label>
+                          </div>
+                        </td>
+                        <td>
+                          <input type="text" id="att_note_${s.StudentId}" value="${s.CurrentNote || ''}" placeholder="Ghi chú (đúng giờ, phép...)" style="width:100%; min-width:140px; padding:6px 10px; border:1px solid #cbd5e1; border-radius:6px; font-family:inherit; font-size:0.85rem;" />
+                        </td>
+                        <td>
+                          <span class="badge" style="background:${attRate >= 80 ? '#dcfce7' : '#fee2e2'}; color:${attRate >= 80 ? '#166534' : '#991b1b'}; font-weight:600;">
+                            ${s.TotalAttended}/${s.TotalSessions} (${attRate}%)
+                          </span>
+                        </td>
+                      </tr>
+                    `;
+                  }).join('')}
+                </tbody>
+              </table>
+            </div>
+          `;
+        } else {
+          container.innerHTML = '<p style="color:#dc2626;">Không thể tải dữ liệu điểm danh.</p>';
+        }
+      } catch (e) {
+        container.innerHTML = '<p style="color:#dc2626;">Lỗi tải dữ liệu điểm danh: ' + e.message + '</p>';
+      }
+    }
+
+    function markAllPresent() {
+      if (!currentAttendanceStudents || currentAttendanceStudents.length === 0) return;
+      currentAttendanceStudents.forEach(s => {
+        const radio = document.querySelector(`input[name="att_status_${s.StudentId}"][value="present"]`);
+        if (radio) radio.checked = true;
+      });
+      const badge = document.getElementById('attendance-summary-badge');
+      if (badge) {
+        badge.innerHTML = `Có mặt: <strong>${currentAttendanceStudents.length}</strong> | Muộn: <strong>0</strong> | Vắng: <strong>0</strong>`;
+      }
+    }
+
+    async function saveClassAttendance(classId) {
+      if (!currentAttendanceStudents || currentAttendanceStudents.length === 0) {
+        alert('Lớp không có học viên để điểm danh');
+        return;
+      }
+
+      const dateInput = document.getElementById('attendance-date-input');
+      const targetDate = (dateInput && dateInput.value) || new Date().toISOString().split('T')[0];
+
+      const attendanceList = currentAttendanceStudents.map(s => {
+        const selectedRadio = document.querySelector(`input[name="att_status_${s.StudentId}"]:checked`);
+        const noteInput = document.getElementById(`att_note_${s.StudentId}`);
+        return {
+          studentId: s.StudentId,
+          status: selectedRadio ? selectedRadio.value : 'present',
+          note: noteInput ? noteInput.value.trim() : ''
+        };
+      });
+
+      const btn = document.getElementById('btn-save-attendance');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'Đang lưu...';
+      }
+
+      try {
+        const { status, data } = await apiCall(`/api/teacher/classes/${classId}/attendance/bulk`, 'POST', {
+          date: targetDate,
+          attendanceList
+        });
+
+        if (status === 200 && data.success) {
+          showAlert(data.message, 'success');
+          loadClassAttendance(classId, targetDate);
+        } else {
+          alert('❌ ' + (data.message || 'Không thể lưu điểm danh'));
+        }
+      } catch (e) {
+        alert('❌ Lỗi kết nối khi lưu điểm danh: ' + e.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '💾 Lưu Bảng Điểm Danh';
+        }
+      }
     }
 
     // Alert
