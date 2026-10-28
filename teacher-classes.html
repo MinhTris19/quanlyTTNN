@@ -243,6 +243,35 @@
     </div>
   </div>
 
+  <!-- Schedule Modal (Teacher adds/updates class schedule) -->
+  <div id="schedule-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="schedule-modal-title">Cập nhật Lịch học Lớp</h2>
+        <button class="close-btn" onclick="closeScheduleModal()">&times;</button>
+      </div>
+      <div class="form-group">
+        <label>Ca học / Lịch học trong tuần (*):</label>
+        <input type="text" id="schedule-input" placeholder="Ví dụ: Thứ 2, 4, 6 (18:00 - 19:30)" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;" />
+        <div style="display:flex; gap:6px; flex-wrap:wrap; margin-top:8px;">
+          <button type="button" style="padding:3px 8px; border:1px solid #cbd5e1; background:#f8fafc; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="document.getElementById('schedule-input').value='Thứ 2, 4, 6 (18:00 - 19:30)'">T2-4-6 (18h-19h30)</button>
+          <button type="button" style="padding:3px 8px; border:1px solid #cbd5e1; background:#f8fafc; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="document.getElementById('schedule-input').value='Thứ 2, 4, 6 (19:30 - 21:00)'">T2-4-6 (19h30-21h)</button>
+          <button type="button" style="padding:3px 8px; border:1px solid #cbd5e1; background:#f8fafc; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="document.getElementById('schedule-input').value='Thứ 3, 5, 7 (18:00 - 19:30)'">T3-5-7 (18h-19h30)</button>
+          <button type="button" style="padding:3px 8px; border:1px solid #cbd5e1; background:#f8fafc; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="document.getElementById('schedule-input').value='Thứ 3, 5, 7 (19:30 - 21:00)'">T3-5-7 (19h30-21h)</button>
+          <button type="button" style="padding:3px 8px; border:1px solid #cbd5e1; background:#f8fafc; border-radius:6px; font-size:0.75rem; cursor:pointer;" onclick="document.getElementById('schedule-input').value='Thứ 7, Chủ Nhật (08:30 - 11:00)'">Cuối tuần (Sáng)</button>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Phòng học:</label>
+        <input type="text" id="schedule-room" placeholder="Ví dụ: P101, P202, Lab 301" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; box-sizing:border-box;" />
+      </div>
+      <div class="modal-footer">
+        <button class="btn-modal btn-cancel" onclick="closeScheduleModal()">Hủy</button>
+        <button class="btn-modal btn-primary-modal" id="btn-save-schedule" onclick="saveClassSchedule()">Lưu Lịch Học</button>
+      </div>
+    </div>
+  </div>
+
   <!-- AI Toggle & Panel -->
   <button class="ai-toggle" type="button" onclick="toggleTeacherAi()" aria-label="Mở trợ lý AI">🤖</button>
   <div class="ai-panel" id="teacher-ai-panel">
@@ -363,9 +392,25 @@
               <div class="label">Giảng viên</div>
               <div class="value">${session.name || 'Giảng viên'}</div>
             </div>
+            <div class="info-item">
+              <div class="label">⏰ Ca học / Lịch học</div>
+              <div class="value" style="color:#0284c7; font-weight:700;">${cls.Schedule || 'Chưa thiết lập'}</div>
+            </div>
+            <div class="info-item">
+              <div class="label">📍 Phòng học</div>
+              <div class="value" style="font-weight:700;">${cls.Room || 'Chưa xếp phòng'}</div>
+            </div>
           </div>
 
-          <p style="color: #64748b; font-size: 0.95rem; margin-bottom: 24px;"><strong>Mô tả:</strong> ${cls.Description || 'Không có mô tả bổ sung.'}</p>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom: 24px; padding:12px 16px; background:#eff6ff; border-radius:10px; border:1px solid #bfdbfe;">
+            <div>
+              <p style="margin:0; color:#1e40af; font-weight:700; font-size:0.95rem;">📅 Lịch Giảng Dạy & Thời Khóa Biểu Lớp Học</p>
+              <p style="margin:4px 0 0; color:#475569; font-size:0.85rem;"><strong>Mô tả:</strong> ${cls.Description || 'Không có mô tả bổ sung.'}</p>
+            </div>
+            <button type="button" class="btn-add-student" style="background:#0284c7;" onclick="openScheduleModal(${cls.Id}, '${(cls.Schedule || '').replace(/'/g, "\\'")}', '${(cls.Room || '').replace(/'/g, "\\'")}', '${cls.Name.replace(/'/g, "\\'")}')">
+              📅 Cập Nhật Lịch Học
+            </button>
+          </div>
 
           <div class="students-section">
             <div class="students-header">
@@ -692,6 +737,59 @@
       } finally {
         btn.disabled = false;
         btn.textContent = 'Lưu Điểm Thi';
+      }
+    }
+
+    // ============================================
+    // QUẢN LÝ LỊCH HỌC GIẢNG VIÊN
+    // ============================================
+    let currentScheduleClassId = null;
+
+    function openScheduleModal(classId, currentSchedule, currentRoom, className) {
+      currentScheduleClassId = classId;
+      document.getElementById('schedule-modal-title').textContent = `Lịch học: ${className}`;
+      document.getElementById('schedule-input').value = currentSchedule || '';
+      document.getElementById('schedule-room').value = currentRoom || '';
+      document.getElementById('schedule-modal').classList.add('open');
+    }
+
+    function closeScheduleModal() {
+      document.getElementById('schedule-modal').classList.remove('open');
+    }
+
+    async function saveClassSchedule() {
+      const schedule = document.getElementById('schedule-input').value.trim();
+      const room = document.getElementById('schedule-room').value.trim();
+
+      if (!schedule) {
+        alert('Vui lòng nhập thông tin ca học / lịch học');
+        return;
+      }
+
+      const btn = document.getElementById('btn-save-schedule');
+      btn.disabled = true;
+      btn.textContent = 'Đang lưu...';
+
+      try {
+        const { status, data } = await apiCall(`/api/teacher/classes/${currentScheduleClassId}/schedule`, {
+          method: 'PUT',
+          body: JSON.stringify({ schedule, room })
+        });
+
+        if (status === 200 && data.success) {
+          showAlert(data.message || 'Cập nhật lịch học thành công!', 'success');
+          closeScheduleModal();
+          viewClassDetail(currentScheduleClassId);
+          loadClasses();
+        } else {
+          alert('❌ ' + (data.message || 'Lỗi lưu lịch học'));
+        }
+      } catch (err) {
+        console.error('Error saving schedule:', err);
+        alert('❌ Lỗi kết nối máy chủ');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Lưu Lịch Học';
       }
     }
 

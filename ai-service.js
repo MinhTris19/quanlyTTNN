@@ -37,6 +37,8 @@ const INTENTS = {
   MY_ATTENDANCE: 'MY_ATTENDANCE',
   MY_SCORES: 'MY_SCORES',
   MY_INFO: 'MY_INFO',
+  MY_SCHEDULE: 'MY_SCHEDULE',
+  MY_TUITION: 'MY_TUITION',
 
   // General / Fallback
   OUT_OF_SCOPE: 'OUT_OF_SCOPE',
@@ -96,7 +98,16 @@ function detectIntent(question, role = 'teacher') {
   // STUDENT INTENTS
   // ============================================
   if (role === 'student') {
-    if (/(lớp nào|lớp của tôi|khóa học của tôi|đang học lớp|danh sách lớp|môn học|lịch học)/.test(q) &&
+    // 1. Học phí
+    if (/(học phí|tiền học|đóng tiền|nộp tiền|nợ học phí|thanh toán|hóa đơn|viện phí|fee|tuition)/.test(q)) {
+      return INTENTS.MY_TUITION;
+    }
+    // 2. Lịch học & Thời khóa biểu & Lịch trình
+    if (/(lịch học|thời khóa biểu|lịch trình|ca học|phòng học|giờ học|buổi học|thứ mấy|khi nào học|schedule|timetable)/.test(q)) {
+      return INTENTS.MY_SCHEDULE;
+    }
+    // 3. Lớp học đang học
+    if (/(lớp nào|lớp của tôi|khóa học của tôi|đang học lớp|danh sách lớp|môn học)/.test(q) &&
         !/(điểm|điểm danh)/.test(q)) {
       return INTENTS.MY_CLASSES;
     }
@@ -263,6 +274,12 @@ async function executeAiQuery(userId, role, question, intent, db, user = {}) {
         case INTENTS.MY_CLASSES:
           result = await studentMyClasses(userId, db);
           break;
+        case INTENTS.MY_SCHEDULE:
+          result = await studentMySchedule(userId, db);
+          break;
+        case INTENTS.MY_TUITION:
+          result = await studentMyTuition(userId, db);
+          break;
         case INTENTS.MY_TEACHER:
           result = await studentMyTeacher(userId, db);
           break;
@@ -278,7 +295,7 @@ async function executeAiQuery(userId, role, question, intent, db, user = {}) {
         default:
           result = {
             success: true,
-            answer: 'Tôi là LinguaHub Mentor AI. Bạn có thể hỏi về các lớp đang học, giáo viên phụ trách, lịch sử điểm danh, bảng điểm cá nhân cũng như các lời khuyên học tập ngoại ngữ.',
+            answer: 'Tôi là LinguaHub Mentor AI. Bạn có thể hỏi về các lớp đang học, lịch học, lịch trình ca học, thông tin học phí, giáo viên phụ trách, lịch sử điểm danh, bảng điểm cá nhân cũng như các lời khuyên học tập ngoại ngữ.',
             role,
             intent
           };
@@ -355,6 +372,53 @@ async function executeAiQuery(userId, role, question, intent, db, user = {}) {
         name: user.FullName || user.name || user.username || `User #${userId}`,
         role: role
       };
+
+      // Tự động bổ sung thông tin học phí, lịch trình và thời khóa biểu cho AI Học viên
+      if (role === 'student') {
+        try {
+          if (Array.isArray(db?.students)) {
+            const student = db.students.find(s => s.UserId === userId);
+            if (student) {
+              const enrolledIds = (db.classStudents || [])
+                .filter(cs => cs.StudentId === student.Id && cs.Status === 'active')
+                .map(cs => cs.ClassId);
+
+              result.enrolledClasses = (db.classes || [])
+                .filter(c => enrolledIds.includes(c.Id))
+                .map(c => {
+                  const t = (db.teachers || []).find(teacher => teacher.Id === c.MainTeacherId);
+                  const u = (db.users || []).find(userItem => userItem.Id === t?.UserId);
+                  return {
+                    ClassName: c.Name,
+                    ClassCode: c.Code,
+                    Schedule: c.Schedule || 'Chưa xếp lịch',
+                    Room: c.Room || 'Chưa xếp phòng',
+                    TeacherName: u?.FullName || 'Chưa phân công',
+                    StartDate: c.StartDate,
+                    EndDate: c.EndDate,
+                    Status: c.Status
+                  };
+                });
+
+              result.tuitionInfo = (db.tuition || [])
+                .filter(t => t.StudentId === student.Id)
+                .map(t => {
+                  const cls = (db.classes || []).find(c => c.Id === t.ClassId);
+                  return {
+                    ClassName: cls?.Name || `Lớp #${t.ClassId}`,
+                    Amount: t.Amount,
+                    DueDate: t.DueDate,
+                    Status: t.Status,
+                    PaidDate: t.PaidDate,
+                    Note: t.Note
+                  };
+                });
+            }
+          }
+        } catch (ctxErr) {
+          console.warn('[AI Context] Warn enriching student context:', ctxErr.message);
+        }
+      }
 
       const geminiRes = await callGeminiAi(role, question, result, userInfo);
 
@@ -1246,6 +1310,132 @@ async function studentMyClasses(userId, db) {
     success: true,
     answer: `Bạn đang theo học ${classes.length} lớp: ${classList}.`,
     classes
+  };
+}
+
+async function studentMySchedule(userId, db) {
+  let classes = [];
+
+  if (Array.isArray(db?.students)) {
+    const student = db.students.find(s => s.UserId === userId);
+    if (student) {
+      const enrolledClassIds = (db.classStudents || [])
+        .filter(cs => cs.StudentId === student.Id && cs.Status === 'active')
+        .map(cs => cs.ClassId);
+
+      classes = (db.classes || [])
+        .filter(c => enrolledClassIds.includes(c.Id))
+        .map(c => {
+          const t = (db.teachers || []).find(teacher => teacher.Id === c.MainTeacherId);
+          const u = (db.users || []).find(user => user.Id === t?.UserId);
+          return {
+            Id: c.Id,
+            ClassName: c.Name,
+            ClassCode: c.Code,
+            TeacherName: u?.FullName || 'Chưa phân công',
+            Schedule: c.Schedule || 'Thứ 2, 4, 6 (18:00 - 19:30)',
+            Room: c.Room || 'P101',
+            StartDate: c.StartDate,
+            EndDate: c.EndDate,
+            Status: c.Status
+          };
+        });
+    }
+  } else {
+    const result = await db.request()
+      .input('userId', sql.Int, userId)
+      .query(`
+        SELECT c.Id, c.Name as ClassName, c.Code as ClassCode, c.Schedule, c.Room, c.StartDate, c.EndDate, c.Status,
+               uTeacher.FullName as TeacherName
+        FROM [dbo].[Students] s
+        INNER JOIN [dbo].[ClassStudents] cs ON s.Id = cs.StudentId
+        INNER JOIN [dbo].[Classes] c ON cs.ClassId = c.Id
+        LEFT JOIN [dbo].[Teachers] t ON c.MainTeacherId = t.Id
+        LEFT JOIN [dbo].[Users] uTeacher ON t.UserId = uTeacher.Id
+        WHERE s.UserId = @userId AND cs.Status = 'active'
+      `);
+    classes = result.recordset;
+  }
+
+  if (classes.length === 0) {
+    return {
+      success: true,
+      answer: 'Bạn hiện chưa đăng ký tham gia lớp học nào nên chưa có lịch học cụ thể. Bạn có thể vào tab "Đăng ký học" để chọn lớp học phù hợp nhé! 📚',
+      schedules: []
+    };
+  }
+
+  const listText = classes.map((c, idx) => 
+    `${idx + 1}. Lớp ${c.ClassName} (${c.ClassCode}):\n   - ⏰ Lịch học: ${c.Schedule}\n   - 📍 Phòng học: ${c.Room}\n   - 👨‍🏫 Giảng viên: ${c.TeacherName}`
+  ).join('\n\n');
+
+  return {
+    success: true,
+    answer: `📅 Lịch học và lịch trình các lớp bạn đang theo học:\n\n${listText}\n\n💡 Bạn nhớ đi học đúng giờ và đầy đủ để duy trì chuyên cần tốt nhé! ✨`,
+    schedules: classes
+  };
+}
+
+async function studentMyTuition(userId, db) {
+  let tuitionList = [];
+
+  if (Array.isArray(db?.students)) {
+    const student = db.students.find(s => s.UserId === userId);
+    if (student && Array.isArray(db?.tuition)) {
+      tuitionList = db.tuition
+        .filter(t => t.StudentId === student.Id)
+        .map(t => {
+          const cls = (db.classes || []).find(c => c.Id === t.ClassId);
+          return {
+            Id: t.Id,
+            ClassName: cls?.Name || `Lớp #${t.ClassId}`,
+            ClassCode: cls?.Code || '',
+            Amount: Number(t.Amount),
+            DueDate: t.DueDate,
+            Status: t.Status,
+            PaidDate: t.PaidDate,
+            Note: t.Note || ''
+          };
+        });
+    }
+  } else {
+    const result = await db.request()
+      .input('userId', sql.Int, userId)
+      .query(`
+        SELECT t.Id, c.Name as ClassName, c.Code as ClassCode, t.Amount, t.DueDate, t.Status, t.PaidDate, t.Note
+        FROM [dbo].[Students] s
+        INNER JOIN [dbo].[Tuition] t ON s.Id = t.StudentId
+        LEFT JOIN [dbo].[Classes] c ON t.ClassId = c.Id
+        WHERE s.UserId = @userId
+        ORDER BY t.DueDate DESC
+      `);
+    tuitionList = result.recordset;
+  }
+
+  if (tuitionList.length === 0) {
+    return {
+      success: true,
+      answer: 'Hiện tại bạn không có khoản học phí nào cần thanh toán hoặc chưa có bản ghi học phí trong hệ thống. 🎉',
+      tuition: []
+    };
+  }
+
+  const listText = tuitionList.map((t, idx) => {
+    const statusText = t.Status === 'paid' 
+      ? `🟢 ĐÃ THANH TOÁN (Ngày nộp: ${t.PaidDate || 'Đã ghi nhận'})` 
+      : '🔴 CHƯA THANH TOÁN (Vui lòng nộp trước hạn)';
+    return `${idx + 1}. Khóa học: ${t.ClassName} (${t.ClassCode})\n   - 💰 Số tiền: ${Number(t.Amount).toLocaleString('vi-VN')} VNĐ\n   - 📌 Trạng thái: ${statusText}\n   - 🗓️ Hạn nộp: ${t.DueDate || 'N/A'}`;
+  }).join('\n\n');
+
+  const unpaid = tuitionList.filter(t => t.Status !== 'paid');
+  const summaryMsg = unpaid.length > 0 
+    ? `⚠️ Bạn còn ${unpaid.length} khoản học phí chưa hoàn thành. Bạn có thể thanh toán trực tiếp tại văn phòng trung tâm hoặc chuyển khoản để kích hoạt đầy đủ quyền lợi học tập nhé!`
+    : `✨ Tất cả các khoản học phí của bạn đều đã được hoàn tất đầy đủ. Chúc bạn có những giờ học hiệu quả tại LinguaHub! 🎯`;
+
+  return {
+    success: true,
+    answer: `💳 Thông tin học phí của bạn:\n\n${listText}\n\n${summaryMsg}`,
+    tuition: tuitionList
   };
 }
 

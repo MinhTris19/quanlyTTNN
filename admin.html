@@ -670,24 +670,70 @@
         try {
           const { status, data } = await apiCall('/api/classes');
           if (status === 200 && data.success && data.data.length > 0) {
-            tbody.innerHTML = data.data.map(c => `
+            const statusMap = {
+              active: { text: '🟢 Đang học', badge: 'badge-success' },
+              open: { text: '🔵 Mở đăng ký', badge: 'badge-primary' },
+              completed: { text: '⚪ Đã kết thúc', badge: 'badge-secondary' },
+              paused: { text: '🟡 Tạm dừng', badge: 'badge-warning' },
+              closed: { text: '🔴 Đã đóng', badge: 'badge-danger' }
+            };
+
+            tbody.innerHTML = data.data.map(c => {
+              const curStatus = c.Status || 'active';
+              const st = statusMap[curStatus] || { text: curStatus, badge: 'badge-primary' };
+              return `
               <tr>
                 <td><strong>${c.Code}</strong></td>
-                <td>${c.Name}</td>
+                <td>
+                  <strong>${c.Name}</strong>
+                  ${c.Schedule ? `<br><small style="color:#64748b;">⏰ ${c.Schedule}</small>` : ''}
+                  ${c.Room ? `<small style="color:#64748b; margin-left:6px;">📍 ${c.Room}</small>` : ''}
+                </td>
                 <td>${c.TeacherName}</td>
                 <td><span class="badge badge-primary">${c.StudentCount || 0}/${c.MaxStudents || 30} HV</span></td>
                 <td>${c.Description || 'Không có mô tả'}</td>
-                <td><span class="badge badge-success">🟢 Đang học</span></td>
+                <td>
+                  <span class="badge ${st.badge}" style="margin-bottom:4px; display:inline-block;">${st.text}</span>
+                  <div style="margin-top:4px;">
+                    <select style="padding:3px 6px; font-size:0.75rem; border:1px solid #cbd5e1; border-radius:6px; background:#ffffff; cursor:pointer;" onchange="updateClassStatus(${c.Id}, this.value, '${c.Name}')" title="Chỉnh sửa trạng thái lớp học">
+                      <option value="active" ${curStatus === 'active' ? 'selected' : ''}>🟢 Đang học</option>
+                      <option value="open" ${curStatus === 'open' ? 'selected' : ''}>🔵 Mở đăng ký</option>
+                      <option value="completed" ${curStatus === 'completed' ? 'selected' : ''}>⚪ Đã kết thúc</option>
+                      <option value="paused" ${curStatus === 'paused' ? 'selected' : ''}>🟡 Tạm dừng</option>
+                    </select>
+                  </div>
+                </td>
                 <td>
                   <button class="btn btn-danger" style="padding:4px 8px; font-size:0.75rem;" onclick="deleteClass(${c.Id}, '${c.Name}')">Xóa</button>
                 </td>
               </tr>
-            `).join('');
+            `;
+            }).join('');
           } else {
             tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#64748b;">Chưa có lớp học nào.</td></tr>';
           }
         } catch (err) {
           tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; color:#dc2626;">Lỗi tải dữ liệu lớp học.</td></tr>';
+        }
+      }
+
+      async function updateClassStatus(classId, newStatus, className) {
+        try {
+          const { status, data } = await apiCall(`/api/admin/classes/${classId}/status`, {
+            method: 'PUT',
+            body: JSON.stringify({ status: newStatus })
+          });
+          if (status === 200 && data.success) {
+            showAlert(`✓ Đã đổi trạng thái lớp "${className}" thành: ${newStatus.toUpperCase()}`);
+            loadClasses();
+            loadOverviewStats();
+          } else {
+            alert('❌ ' + (data.message || 'Không thể cập nhật trạng thái lớp học'));
+            loadClasses();
+          }
+        } catch (err) {
+          console.error('Error updating class status:', err);
+          alert('❌ Lỗi kết nối khi cập nhật trạng thái lớp');
         }
       }
 

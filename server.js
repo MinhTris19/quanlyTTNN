@@ -782,6 +782,90 @@ app.delete('/api/classes/:id', (req, res) => {
 });
 
 // ============================================
+// CHỈNH SỬA TRẠNG THÁI LỚP HỌC (ADMIN)
+// ============================================
+app.put(['/api/admin/classes/:id/status', '/api/classes/:id/status'], (req, res) => {
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ success: false, message: 'Chỉ Quản trị viên có quyền cập nhật trạng thái lớp học.' });
+  }
+
+  const classId = parseInt(req.params.id);
+  const { status } = req.body;
+  const validStatuses = ['active', 'open', 'completed', 'paused', 'closed'];
+
+  if (!status || !validStatuses.includes(status.toLowerCase())) {
+    return res.status(400).json({
+      success: false,
+      message: `Trạng thái không hợp lệ. Phải là một trong: ${validStatuses.join(', ')}`
+    });
+  }
+
+  const cls = inMemoryDb.classes.find(c => c.Id === classId);
+  if (!cls) {
+    return res.status(404).json({ success: false, message: 'Lớp học không tồn tại' });
+  }
+
+  cls.Status = status.toLowerCase();
+  console.log(`[UPDATE CLASS STATUS] Admin updated class ${classId} status to: ${cls.Status}`);
+
+  return res.status(200).json({
+    success: true,
+    message: `Đã cập nhật trạng thái lớp học thành: ${cls.Status}`,
+    data: cls
+  });
+});
+
+// ============================================
+// THÊM & CẬP NHẬT LỊCH HỌC (GIẢNG VIÊN & ADMIN)
+// ============================================
+app.put(['/api/teacher/classes/:id/schedule', '/api/classes/:id/schedule'], (req, res) => {
+  if (!req.user || (req.user.role !== 'teacher' && req.user.role !== 'admin')) {
+    return res.status(403).json({ success: false, message: 'Chỉ giảng viên phụ trách hoặc Admin có quyền cập nhật lịch học.' });
+  }
+
+  const classId = parseInt(req.params.id);
+  const cls = inMemoryDb.classes.find(c => c.Id === classId);
+  if (!cls) {
+    return res.status(404).json({ success: false, message: 'Lớp học không tồn tại' });
+  }
+
+  // Nếu là teacher, kiểm tra có phụ trách lớp này không
+  if (req.user.role === 'teacher') {
+    const teacher = inMemoryDb.teachers.find(t => t.UserId === req.user.id);
+    if (!teacher || teacher.Id !== cls.MainTeacherId) {
+      return res.status(403).json({ success: false, message: 'Bạn chỉ được cập nhật lịch học cho lớp do mình phụ trách.' });
+    }
+  }
+
+  const { schedule, room, startDate, endDate, description } = req.body;
+  if (!schedule || !schedule.trim()) {
+    return res.status(400).json({ success: false, message: 'Vui lòng nhập thông tin lịch học / ca học.' });
+  }
+
+  cls.Schedule = schedule.trim();
+  if (room && room.trim()) cls.Room = room.trim();
+  if (startDate) cls.StartDate = new Date(startDate);
+  if (endDate) cls.EndDate = new Date(endDate);
+  if (description) cls.Description = description.trim();
+
+  console.log(`[UPDATE SCHEDULE] Updated schedule for class ${cls.Name}: ${cls.Schedule}, Room: ${cls.Room}`);
+
+  return res.status(200).json({
+    success: true,
+    message: `Đã lưu lịch học cho lớp ${cls.Name} thành công!`,
+    data: {
+      Id: cls.Id,
+      Name: cls.Name,
+      Code: cls.Code,
+      Schedule: cls.Schedule,
+      Room: cls.Room,
+      StartDate: cls.StartDate,
+      EndDate: cls.EndDate
+    }
+  });
+});
+
+// ============================================
 // TEACHER SPECIFIC APIS
 // ============================================
 
@@ -1170,6 +1254,52 @@ app.get('/api/student/classes', (req, res) => {
     });
 
   return res.status(200).json({ success: true, data: classes });
+});
+
+// GET /api/student/schedules (Học viên tra cứu lịch học theo từng lớp đã đăng ký)
+app.get('/api/student/schedules', (req, res) => {
+  if (!req.user || req.user.role !== 'student') {
+    return res.status(403).json({ success: false, message: 'Chỉ học viên được phép tra cứu lịch học của mình.' });
+  }
+
+  const student = inMemoryDb.students.find(s => s.UserId === req.user.id);
+  if (!student) {
+    return res.status(200).json({ success: true, data: [] });
+  }
+
+  const classIdFilter = req.query.classId ? parseInt(req.query.classId) : null;
+  const enrolled = inMemoryDb.classStudents.filter(cs => 
+    cs.StudentId === student.Id && 
+    cs.Status === 'active' && 
+    (!classIdFilter || cs.ClassId === classIdFilter)
+  );
+
+  const schedules = enrolled.map(cs => {
+    const cls = inMemoryDb.classes.find(c => c.Id === cs.ClassId);
+    if (!cls) return null;
+    const teacher = inMemoryDb.teachers.find(t => t.Id === cls.MainTeacherId);
+    const teacherUser = inMemoryDb.users.find(u => u.Id === teacher?.UserId);
+
+    return {
+      ClassId: cls.Id,
+      ClassName: cls.Name,
+      ClassCode: cls.Code,
+      Schedule: cls.Schedule || 'Thứ 2, 4, 6 (18:00 - 19:30)',
+      Room: cls.Room || 'P101',
+      TeacherName: teacherUser?.FullName || 'Chưa phân công',
+      TeacherPhone: teacher?.Phone || 'N/A',
+      StartDate: cls.StartDate,
+      EndDate: cls.EndDate,
+      Status: cls.Status,
+      JoinDate: cs.JoinDate
+    };
+  }).filter(Boolean);
+
+  return res.status(200).json({
+    success: true,
+    message: 'Tra cứu lịch học thành công',
+    data: schedules
+  });
 });
 
 // GET /api/student/attendance

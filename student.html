@@ -110,6 +110,7 @@
         </button>
         <nav class="header-nav" id="header-nav">
           <button class="nav-item active" type="button" onclick="switchStudentTab('overview')"><span class="nav-icon">🏠</span>Tổng quan</button>
+          <button class="nav-item" type="button" onclick="switchStudentTab('schedule')"><span class="nav-icon">📅</span>Lịch học</button>
           <button class="nav-item" type="button" onclick="switchStudentTab('enroll')"><span class="nav-icon">📝</span>Đăng ký học</button>
           <button class="nav-item" type="button" onclick="switchStudentTab('tuition')"><span class="nav-icon">💳</span>Học phí</button>
           <button class="nav-item" type="button" onclick="switchStudentTab('ai-hub')"><span class="nav-icon">✨</span>AI Học tập</button>
@@ -152,6 +153,53 @@
           <h2>🏆 Bảng điểm & Kết quả kiểm tra</h2>
           <div id="scores-container" style="overflow-x:auto;">
             <p style="color: #64748b;">Đang tải bảng điểm...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: TRA CỨU LỊCH HỌC THEO TỪNG LỚP -->
+      <div id="tab-schedule" class="section-view">
+        <div class="section-card">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+            <div>
+              <h2 style="margin:0;">📅 Thời khóa biểu & Lịch học theo từng lớp</h2>
+              <p style="color:#64748b; margin:4px 0 0;">Tra cứu chi tiết ca học, phòng học, giáo viên phụ trách của các lớp bạn đã đăng ký.</p>
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <label style="font-weight:600; font-size:0.9rem; color:#334155;">Lọc theo lớp:</label>
+              <select id="schedule-class-filter" style="padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:0.9rem; cursor:pointer;" onchange="filterStudentSchedule(this.value)">
+                <option value="all">-- Tất cả các lớp --</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="student-schedules-container" class="grid-classes" style="margin-bottom:24px;">
+            <p style="color: #64748b;">Đang tải thời khóa biểu...</p>
+          </div>
+
+          <!-- Weekly visual schedule -->
+          <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; padding:20px; box-shadow:0 4px 10px rgba(0,0,0,0.03);">
+            <h3 style="margin-top:0; color:#1e3a8a; font-size:1.1rem; display:flex; align-items:center; gap:8px;">
+              🗓️ Lịch Trình Ca Học Trong Tuần
+            </h3>
+            <div id="weekly-schedule-grid" style="overflow-x:auto;">
+              <table class="data-table">
+                <thead>
+                  <tr style="background:#f1f5f9;">
+                    <th style="width:14%;">Thứ 2</th>
+                    <th style="width:14%;">Thứ 3</th>
+                    <th style="width:14%;">Thứ 4</th>
+                    <th style="width:14%;">Thứ 5</th>
+                    <th style="width:14%;">Thứ 6</th>
+                    <th style="width:14%;">Thứ 7</th>
+                    <th style="width:16%;">Chủ Nhật</th>
+                  </tr>
+                </thead>
+                <tbody id="weekly-schedule-body">
+                  <tr><td colspan="7" style="text-align:center; padding:16px; color:#64748b;">Đang tổng hợp thời khóa biểu tuần...</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
@@ -287,6 +335,7 @@
         const navBtn = Array.from(document.querySelectorAll('.nav-item')).find(b => {
           const t = b.textContent.toLowerCase();
           if (tabId === 'overview') return t.includes('tổng quan');
+          if (tabId === 'schedule') return t.includes('lịch học');
           if (tabId === 'enroll') return t.includes('đăng ký');
           if (tabId === 'tuition') return t.includes('học phí');
           if (tabId === 'ai-hub') return t.includes('ai');
@@ -294,6 +343,7 @@
         });
         if (navBtn) navBtn.classList.add('active');
 
+        if (tabId === 'schedule') loadStudentSchedules();
         if (tabId === 'enroll') loadAvailableClasses();
         if (tabId === 'tuition') loadStudentTuition();
       }
@@ -404,6 +454,118 @@
         } catch (e) {
           container.innerHTML = '<p style="color:#dc2626;">Lỗi tải bảng điểm.</p>';
         }
+      }
+
+      // ============================================
+      // TRA CỨU LỊCH HỌC & THỜI KHÓA BIỂU THEO LỚP
+      // ============================================
+      let cachedStudentSchedules = [];
+
+      async function loadStudentSchedules() {
+        const container = document.getElementById('student-schedules-container');
+        const filterSelect = document.getElementById('schedule-class-filter');
+        container.innerHTML = '<p style="color: #64748b;">Đang tải thời khóa biểu...</p>';
+
+        try {
+          const { status, data } = await apiCall('/api/student/schedules');
+          if (status === 200 && data.success && data.data.length > 0) {
+            cachedStudentSchedules = data.data;
+
+            filterSelect.innerHTML = '<option value="all">-- Tất cả các lớp (' + data.data.length + ') --</option>' +
+              data.data.map(c => `<option value="${c.ClassId}">Lớp ${c.ClassName} (${c.ClassCode})</option>`).join('');
+
+            renderStudentSchedules(data.data);
+            renderWeeklySchedule(data.data);
+          } else {
+            container.innerHTML = `
+              <div style="grid-column: 1 / -1; text-align: center; padding: 32px; background: white; border-radius: 12px; border: 1px dashed #cbd5e1; color: #64748b;">
+                <p style="font-size: 1.1rem; margin-bottom: 8px;">Bạn chưa có lịch học nào do chưa tham gia lớp học.</p>
+                <button class="btn btn-primary" onclick="switchStudentTab('enroll')">Khám phá các lớp học đang tuyển sinh</button>
+              </div>
+            `;
+            document.getElementById('weekly-schedule-body').innerHTML = 
+              '<tr><td colspan="7" style="text-align:center; padding:16px; color:#64748b;">Chưa có lớp học nào được xếp lịch.</td></tr>';
+          }
+        } catch (err) {
+          console.error('Error loading student schedules:', err);
+          container.innerHTML = '<p style="color:#dc2626;">Lỗi tải thời khóa biểu.</p>';
+        }
+      }
+
+      function filterStudentSchedule(classId) {
+        if (classId === 'all') {
+          renderStudentSchedules(cachedStudentSchedules);
+          renderWeeklySchedule(cachedStudentSchedules);
+        } else {
+          const filtered = cachedStudentSchedules.filter(c => c.ClassId === parseInt(classId));
+          renderStudentSchedules(filtered);
+          renderWeeklySchedule(filtered);
+        }
+      }
+
+      function renderStudentSchedules(list) {
+        const container = document.getElementById('student-schedules-container');
+        container.innerHTML = list.map(c => `
+          <div class="student-class-card" style="border-top: 4px solid #0284c7;">
+            <div>
+              <span class="code-badge" style="background:#e0f2fe; color:#0369a1;">${c.ClassCode}</span>
+              <span class="badge ${c.Status === 'active' ? 'badge-success' : 'badge-primary'}" style="float:right; font-size:0.75rem;">
+                ${c.Status === 'active' ? '🟢 Đang học' : '🔵 ' + c.Status}
+              </span>
+              <h3>${c.ClassName}</h3>
+              <div style="margin: 12px 0; background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; font-size: 0.9rem;">
+                <p style="margin: 0 0 6px; color: #0284c7; font-weight: 700;">⏰ Ca học: ${c.Schedule}</p>
+                <p style="margin: 0 0 6px; color: #334155; font-weight: 600;">📍 Phòng học: ${c.Room}</p>
+                <p style="margin: 0; color: #475569;">👨‍🏫 Giảng viên: <strong>${c.TeacherName}</strong></p>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.8rem; color:#64748b; margin-top:8px;">
+              <span>🗓️ Bắt đầu: ${c.StartDate ? new Date(c.StartDate).toLocaleDateString('vi-VN') : 'N/A'}</span>
+              <span>Kết thúc: ${c.EndDate ? new Date(c.EndDate).toLocaleDateString('vi-VN') : 'N/A'}</span>
+            </div>
+          </div>
+        `).join('');
+      }
+
+      function renderWeeklySchedule(list) {
+        const tbody = document.getElementById('weekly-schedule-body');
+        const days = ['Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7', 'Chủ Nhật'];
+        const daySlots = {
+          'Thứ 2': [], 'Thứ 3': [], 'Thứ 4': [], 'Thứ 5': [], 'Thứ 6': [], 'Thứ 7': [], 'Chủ Nhật': []
+        };
+
+        list.forEach(c => {
+          const sch = c.Schedule || '';
+          if (sch.includes('2') || sch.toLowerCase().includes('thứ 2')) daySlots['Thứ 2'].push(c);
+          if (sch.includes('3') || sch.toLowerCase().includes('thứ 3')) daySlots['Thứ 3'].push(c);
+          if (sch.includes('4') || sch.toLowerCase().includes('thứ 4')) daySlots['Thứ 4'].push(c);
+          if (sch.includes('5') || sch.toLowerCase().includes('thứ 5')) daySlots['Thứ 5'].push(c);
+          if (sch.includes('6') || sch.toLowerCase().includes('thứ 6')) daySlots['Thứ 6'].push(c);
+          if (sch.includes('7') || sch.toLowerCase().includes('thứ 7')) daySlots['Thứ 7'].push(c);
+          if (sch.toLowerCase().includes('chủ nhật') || sch.toLowerCase().includes('cn')) daySlots['Chủ Nhật'].push(c);
+        });
+
+        tbody.innerHTML = `
+          <tr>
+            ${days.map(d => {
+              const items = daySlots[d];
+              if (items.length === 0) {
+                return '<td style="vertical-align:top; background:#f8fafc; height:90px; text-align:center; color:#94a3b8; font-size:0.8rem; padding:8px;">— Trống —</td>';
+              }
+              return `
+                <td style="vertical-align:top; background:#ffffff; padding:8px;">
+                  ${items.map(it => `
+                    <div style="background:#eff6ff; border-left:3px solid #2563eb; padding:6px 8px; border-radius:4px; margin-bottom:6px; font-size:0.8rem;">
+                      <strong style="color:#1e40af; display:block;">${it.ClassName}</strong>
+                      <span style="color:#0284c7; font-size:0.75rem;">${it.Schedule.split('(')[1]?.replace(')', '') || it.Schedule}</span>
+                      <span style="color:#475569; display:block; font-size:0.72rem;">📍 ${it.Room}</span>
+                    </div>
+                  `).join('')}
+                </td>
+              `;
+            }).join('')}
+          </tr>
+        `;
       }
 
       // ============================================

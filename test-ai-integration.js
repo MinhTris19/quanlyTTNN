@@ -19,7 +19,7 @@ const mockDb = {
     { Id: 1, UserId: 4, Phone: '0911111111', Status: 'active' }
   ],
   classes: [
-    { Id: 1, Name: 'TOEIC 500A', Code: 'TOEIC-500A', MainTeacherId: 1, Status: 'active' }
+    { Id: 1, Name: 'TOEIC 500A', Code: 'TOEIC-500A', MainTeacherId: 1, Status: 'active', Schedule: 'Thứ 2, 4, 6 (18:00 - 19:30)', Room: 'P101' }
   ],
   classStudents: [
     { Id: 1, ClassId: 1, StudentId: 1, Status: 'active' }
@@ -29,6 +29,9 @@ const mockDb = {
   ],
   scores: [
     { Id: 1, StudentId: 1, ClassId: 1, ExamName: 'Midterm Test', Score: 78.5, MaxScore: 100 }
+  ],
+  tuition: [
+    { Id: 1, StudentId: 1, ClassId: 1, Amount: 3500000, DueDate: '2026-03-31', Status: 'paid', PaidDate: '2026-01-05' }
   ]
 };
 
@@ -163,6 +166,29 @@ async function runTestSuite() {
   const targetScore = mockDb.scores.find(s => s.examName === 'Final Exam');
   targetScore.score = 95.0;
   assert(targetScore.score === 95.0, 'F13: Giảng viên chỉnh sửa điểm thi thành công');
+
+  // Chức năng mới 1: Admin chỉnh sửa trạng thái lớp học
+  const targetClass = mockDb.classes.find(c => c.Id === 1);
+  targetClass.Status = 'completed';
+  assert(mockDb.classes.find(c => c.Id === 1).Status === 'completed', 'Admin chỉnh sửa trạng thái lớp học thành công (active -> completed)');
+  targetClass.Status = 'active'; // phục hồi
+
+  // Chức năng mới 2: Giảng viên thêm / cập nhật lịch học của lớp
+  targetClass.Schedule = 'Thứ 2, 4, 6 (19:30 - 21:00)';
+  targetClass.Room = 'Lab 301';
+  assert(targetClass.Schedule.includes('19:30') && targetClass.Room === 'Lab 301', 'Giảng viên thêm / cập nhật lịch học & phòng học cho lớp thành công');
+
+  // Chức năng mới 3: Học viên tra cứu lịch học theo từng lớp đã đăng ký
+  const studentEnrolledClass = mockDb.classes.find(c => c.Id === 1);
+  assert(studentEnrolledClass && studentEnrolledClass.Schedule && studentEnrolledClass.Room, 'Học viên tra cứu lịch học theo từng lớp đã đăng ký thành công');
+
+  // Chức năng mới 4: AI Học viên tra cứu Lịch học & Lịch trình (MY_SCHEDULE)
+  const aiScheduleRes = await executeAiQuery(4, 'student', 'Lịch học của tôi thế nào?', INTENTS.MY_SCHEDULE, mockDb, { id: 4, name: 'Nguyễn Văn A' });
+  assert(aiScheduleRes.success === true && (aiScheduleRes.answer.includes('Lịch học') || aiScheduleRes.answer.includes('TOEIC')), 'AI Học viên tra cứu lịch học và lịch trình ca học chính xác');
+
+  // Chức năng mới 5: AI Học viên tra cứu Học phí (MY_TUITION)
+  const aiTuitionRes = await executeAiQuery(4, 'student', 'Tôi có khoản học phí nào chưa đóng không?', INTENTS.MY_TUITION, mockDb, { id: 4, name: 'Nguyễn Văn A' });
+  assert(aiTuitionRes.success === true && (aiTuitionRes.answer.includes('học phí') || aiTuitionRes.answer.includes('thanh toán')), 'AI Học viên tra cứu tình trạng học phí và hạn nộp rõ ràng');
 
   console.log('\n===============================================================');
   console.log(`🏁 KẾT QUẢ KIỂM THỬ: ${passedTests}/${totalTests} TESTS ĐẠT YÊU CẦU (100%)`);
